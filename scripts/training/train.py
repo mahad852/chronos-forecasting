@@ -83,8 +83,9 @@ def get_training_job_info() -> Dict:
         }
         print(job_info)
 
-        print(torch.cuda.mem_get_info(device=0))
-        print(torch.cuda.mem_get_info(device=1))
+        for device_idx in job_info["device_names"].keys():
+            print(torch.cuda.mem_get_info(device=device_idx))
+            
         job_info["mem_info"] = {
             idx: torch.cuda.mem_get_info(device=idx)
             for idx in range(torch.cuda.device_count())
