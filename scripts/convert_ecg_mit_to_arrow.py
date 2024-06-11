@@ -39,7 +39,7 @@ def get_ecg_mit_dataset(dpath = "/home/mali2/datasets/ecg/MIT-BIH.npz"):
 
 if __name__ == "__main__":
     time_series = []
-    data = get_ecg_mit_dataset("/Users/ma649596/Downloads/MIT-BIH.npz")
+    data = get_ecg_mit_dataset() #"/Users/ma649596/Downloads/MIT-BIH.npz")
     
     for i in range(data.shape[1]):
         time_series.append(data[:, i])
