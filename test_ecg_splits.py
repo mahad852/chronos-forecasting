@@ -42,7 +42,7 @@ for p_len in range(1, pred_len + 1):
 
 for i, (x, y) in enumerate(single_loader(dataset)):
     forecast = pipeline.predict(
-        context=torch.tensor(x),
+        context=torch.tensor(np.array(x)),
         prediction_length=pred_len,
         num_samples=20,
     )
