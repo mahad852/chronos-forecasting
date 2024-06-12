@@ -12,7 +12,7 @@ data_path = "/home/mali2/datasets/ecg/MIT-BIH-splits.npz"
 model_path = "scripts/output/run-8/checkpoint-final/"
 
 pipeline = ChronosPipeline.from_pretrained(
-    "amazon/chronos-t5-mini",
+    model_path,
     device_map="cuda:0",  # use "cpu" for CPU inference and "mps" for Apple Silicon
     torch_dtype=torch.bfloat16,
 )
@@ -75,7 +75,7 @@ for p_len in range(1, pred_len + 1):
 if not os.path.exists("logs"):
     os.mkdir("logs")
 
-with open(os.path.join("logs", f"Chronos_Mini_{context_len}_{pred_len}.csv"), "w") as f:
+with open(os.path.join("logs", f"Chronos_Mini_Run8_{context_len}_{pred_len}.csv"), "w") as f:
     f.write("context_len,horizon_len,MSE,RMSE,MAE\n")
     for p_len in range(1, pred_len + 1):
         f.write(f"{context_len},{p_len},{mse_by_pred_len[p_len]},{rmse_by_pred_len[p_len]},{mae_by_pred_len[p_len]}")
