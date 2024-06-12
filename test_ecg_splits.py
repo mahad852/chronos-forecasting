@@ -59,8 +59,8 @@ for i, (x, y) in enumerate(single_loader(dataset)):
     total += 1
 
     for p_len in range(1, pred_len + 1):
-        mse_by_pred_len[p_len] += mean_squared_error(y, forecast)
-        mae_by_pred_len[p_len] += mean_absolute_error(y, forecast)
+        mse_by_pred_len[p_len] += mean_squared_error(y[:, :pred_len], forecast[:, :pred_len])
+        mae_by_pred_len[p_len] += mean_absolute_error(y[:, :pred_len], forecast[:, :pred_len])
 
     if i % 20 == 0:
         print(f"iteraition: {i} | MSE: {mse} RMSE: {rmse} MAE: {mae}")
