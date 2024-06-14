@@ -25,13 +25,15 @@ batch_size = 32
 
 def batch_loader(dataset):
     for i in range(0, len(dataset.files), batch_size):
-        batch = []
+        batchX = []
+        batchY = []
         for file in dataset.files[i : min(i + batch_size, len(dataset.files))]:
             xy = dataset[file]
             x, y = xy[:context_len], xy[context_len:context_len + pred_len]
-            batch.append((x, y))
+            batchX.append(x)
+            batchY.append(y)
         
-        yield batch
+        yield np.array(batchX), np.array(batchY)
 
 dataset = np.load(data_path)
 
@@ -51,11 +53,11 @@ for p_len in range(1, pred_len + 1):
 
 for i, (x, y) in enumerate(batch_loader(dataset)):
     forecast = pipeline.predict(
-        context=torch.tensor(np.array(x)),
+        context=torch.tensor(x),
         prediction_length=pred_len,
         num_samples=20,
     )
-    y = np.array(y)
+
     forecast = np.quantile(forecast.numpy(), 0.5, axis=1)
 
     mse = mean_squared_error(y, forecast)
