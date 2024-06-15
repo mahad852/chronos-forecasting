@@ -9,7 +9,9 @@ pred_len = 64
 
 data_path = "/home/mali2/datasets/ecg/MIT-BIH-splits.npz"
 
-# model_path = "scripts/output/run-8/checkpoint-final/"
+# model_path = "scripts/output/run-8/checkpoint-final/ -> mini"
+# model_path = "scripts/output/run-10/checkpoint-final/ -> base" 
+# model_path = "scripts/output/run-11/checkpoint-final/ -> large" 
 model_path = "scripts/output/run-11/checkpoint-final/"
 
 
