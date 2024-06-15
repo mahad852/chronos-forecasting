@@ -5,7 +5,7 @@ import torch
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 context_len = 720
-pred_len = 64
+pred_len = 1
 
 data_path = "/home/mali2/datasets/ecg/MIT-BIH_720_1_many.npz"
 
