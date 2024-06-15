@@ -3,7 +3,7 @@ training_data_paths:
 probability:
 - 1.0
 context_length: 720
-prediction_length: 1
+prediction_length: 64
 min_past: 60
 max_steps: 200_000
 save_steps: 100_000
