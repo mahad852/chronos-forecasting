@@ -2,8 +2,8 @@ training_data_paths:
 - "/home/mali2/chronos-forecasting/scripts/ecg_mit.arrow"
 probability:
 - 1.0
-context_length: 512
-prediction_length: 64
+context_length: 720
+prediction_length: 1
 min_past: 60
 max_steps: 200_000
 save_steps: 100_000
