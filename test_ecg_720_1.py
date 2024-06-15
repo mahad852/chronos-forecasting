@@ -9,8 +9,8 @@ pred_len = 1
 
 data_path = "/home/mali2/datasets/ecg/MIT-BIH_720_1_many.npz"
 
-# model_path = "scripts/output/run-12/checkpoint-final/ -> mini"
-model_path = "scripts/output/run-12/checkpoint-final/"
+# model_path = "scripts/output/run-15/checkpoint-final/ -> mini on 100000 720_1"
+model_path = "scripts/output/run-15/checkpoint-final/"
 
 
 pipeline = ChronosPipeline.from_pretrained(
@@ -74,6 +74,9 @@ for i, (x, y) in enumerate(batch_loader(dataset)):
     if i % 20 == 0:
         print(f"iteraition: {i} | MSE: {mse} RMSE: {rmse} MAE: {mae}")
 
+    if i % 200 == 0:
+        print(f"AGG STATS | Iteration: {i} | MSE: {np.average(mses)} RMSE: {np.sqrt(np.average(mses))} MAE: {np.average(maes)}")
+
 print(f"MSE: {np.average(mses)} RMSE: {np.sqrt(np.average(mses))} MAE: {np.average(maes)}")
 
 for p_len in range(1, pred_len + 1):
@@ -85,7 +88,7 @@ if not os.path.exists("logs"):
     os.mkdir("logs")
 
 # with open(os.path.join("logs", f"Chronos_Mini_Run8_{context_len}_{pred_len}.csv"), "w") as f:
-with open(os.path.join("logs", f"Chronos_Mini_Run12_{context_len}_{pred_len}_next_step.csv"), "w") as f:
+with open(os.path.join("logs", f"Chronos_Mini_Run15_{context_len}_{pred_len}_next_step.csv"), "w") as f:
     f.write("context_len,horizon_len,MSE,RMSE,MAE\n")
     for p_len in range(1, pred_len + 1):
         f.write(f"{context_len},{p_len},{mse_by_pred_len[p_len]},{rmse_by_pred_len[p_len]},{mae_by_pred_len[p_len]}")
