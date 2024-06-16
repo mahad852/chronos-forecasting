@@ -4,15 +4,17 @@ import os
 import torch
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
-context_len = 512
+context_len = 384
 pred_len = 64
 
-data_path = "/home/mali2/datasets/ecg/MIT-BIH-splits.npz"
+# data_path = "/home/mali2/datasets/ecg/MIT-BIH-splits.npz"
+data_path = "/home/mali2/datasets/ecg/MIT-BIH_lagllama_384_64_forecast.npz"
 
 # model_path = "scripts/output/run-8/checkpoint-final/ -> mini"
 # model_path = "scripts/output/run-10/checkpoint-final/ -> base" 
 # model_path = "scripts/output/run-11/checkpoint-final/ -> large" 
-model_path = "scripts/output/run-11/checkpoint-final/"
+# model_path = "scripts/output/run-17/checkpoint-final/ -> mini 384x64" 
+model_path = "scripts/output/run-17/checkpoint-final/"
 
 
 pipeline = ChronosPipeline.from_pretrained(
@@ -68,6 +70,9 @@ for i, (x, y) in enumerate(single_loader(dataset)):
 
     if i % 20 == 0:
         print(f"iteraition: {i} | MSE: {mse} RMSE: {rmse} MAE: {mae}")
+    
+    if i % 200 == 0:
+        print(f"AGG STATS | Iteration: {i} | MSE: {np.average(mses)} RMSE: {np.sqrt(np.average(mses))} MAE: {np.average(maes)}")
 
 print(f"MSE: {np.average(mses)} RMSE: {np.sqrt(np.average(mses))} MAE: {np.average(maes)}")
 
