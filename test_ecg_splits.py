@@ -15,8 +15,9 @@ data_path = "/home/mali2/datasets/ecg/MIT-BIH-splits.npz"
 # model_path = "scripts/output/run-11/checkpoint-final/ -> large" 
 # model_path = "scripts/output/run-17/checkpoint-final/ -> mini 384x64" 
 # model_path = "scripts/output/run-18/checkpoint-final" -> small 
+# model_path = "scripts/output/run-19/checkpoint-final" -> tiny
 
-model_path = "scripts/output/run-18/checkpoint-final"
+model_path = "scripts/output/run-19/checkpoint-final"
 
 
 pipeline = ChronosPipeline.from_pretrained(
@@ -87,7 +88,7 @@ if not os.path.exists("logs"):
     os.mkdir("logs")
 
 # with open(os.path.join("logs", f"Chronos_Mini_Run8_{context_len}_{pred_len}.csv"), "w") as f:
-with open(os.path.join("logs", f"Chronos_Small_Run18_{context_len}_{pred_len}.csv"), "w") as f:
+with open(os.path.join("logs", f"Chronos_Tiny_Run19_{context_len}_{pred_len}.csv"), "w") as f:
     f.write("context_len,horizon_len,MSE,RMSE,MAE\n")
     for p_len in range(1, pred_len + 1):
         f.write(f"{context_len},{p_len},{mse_by_pred_len[p_len]},{rmse_by_pred_len[p_len]},{mae_by_pred_len[p_len]}")
