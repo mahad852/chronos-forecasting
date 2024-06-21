@@ -10,7 +10,7 @@ pred_len = 1
 data_path = "/home/mali2/datasets/ecg/MIT-BIH_720_1_many.npz"
 
 # model_path = "scripts/output/run-15/checkpoint-final/ -> mini on 100000 720_1"
-model_path = "scripts/output/run-16/checkpoint-final/"
+model_path = "amazon/chronos-t5-large"
 
 
 pipeline = ChronosPipeline.from_pretrained(
