@@ -4,11 +4,11 @@ import os
 import torch
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
-context_len = 384
+context_len = 512
 pred_len = 64
 
 # data_path = "/home/mali2/datasets/ecg/MIT-BIH-splits.npz"
-data_path = "/home/mali2/datasets/ecg/MIT-BIH_lagllama_384_64_forecast.npz"
+data_path = "/home/mali2/datasets/ecg/MIT-BIH-splits.npz"
 
 # model_path = "scripts/output/run-8/checkpoint-final/ -> mini"
 # model_path = "scripts/output/run-10/checkpoint-final/ -> base" 
