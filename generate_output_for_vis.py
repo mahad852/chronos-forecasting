@@ -15,7 +15,7 @@ def get_context(ds, true_key):
     return ds[true_key][:context_len]
 
 pipeline = ChronosPipeline.from_pretrained(
-    "amazon/chronos-t5-large",
+    "scripts/output/run-11/checkpoint-final",
     device_map="cuda",  # use "cpu" for CPU inference and "mps" for Apple Silicon
     torch_dtype=torch.bfloat16,
 )
@@ -34,4 +34,4 @@ forecast = np.quantile(forecast.numpy(), 0.5, axis=1)[0]
 if not os.path.exists("forecasts"):
     os.mkdir("forecasts")
 
-np.save("forecasts/a103-48_384_64_chronos", forecast)
+np.save("forecasts/a103-48_384_64_chronos_run11", forecast)
