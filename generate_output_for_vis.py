@@ -16,7 +16,7 @@ def get_context(ds, true_key):
 
 pipeline = ChronosPipeline.from_pretrained(
     "amazon/chronos-t5-large",
-    device_map="cuda:0",  # use "cpu" for CPU inference and "mps" for Apple Silicon
+    device_map="cuda",  # use "cpu" for CPU inference and "mps" for Apple Silicon
     torch_dtype=torch.bfloat16,
 )
 
@@ -25,7 +25,7 @@ context = np.array([get_context(dataset, sample_true_key)])
 
 
 forecast = pipeline.predict(
-    context=torch.tensor(np.array(x)),
+    context=torch.tensor(np.array(context)),
     prediction_length=pred_len,
     num_samples=20,
 )
