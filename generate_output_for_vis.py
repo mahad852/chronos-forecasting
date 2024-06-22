@@ -15,7 +15,7 @@ def get_context(ds, true_key):
     return ds[true_key][:context_len]
 
 pipeline = ChronosPipeline.from_pretrained(
-    "amazon/chronos-t5-mini",
+    "amazon/chronos-t5-large",
     device_map="cuda:0",  # use "cpu" for CPU inference and "mps" for Apple Silicon
     torch_dtype=torch.bfloat16,
 )
