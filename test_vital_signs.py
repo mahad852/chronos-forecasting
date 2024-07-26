@@ -24,7 +24,6 @@ pipeline = ChronosPipeline.from_pretrained(
 batch_size = 32
 
 
-
 def batch_loader():
     for folder in os.listdir(data_path):
         for file in os.listdir(os.path.join(data_path, folder)):
@@ -49,8 +48,6 @@ def batch_loader():
                 
                 yield np.array(batchX), np.array(batchY)
 
-dataset = np.load(data_path)
-
 mses = []
 maes = []
 
@@ -65,7 +62,7 @@ for p_len in range(1, pred_len + 1):
     rmse_by_pred_len[p_len] = 0.0
     mae_by_pred_len[p_len] = 0.0
 
-for i, (x, y) in enumerate(batch_loader(dataset)):
+for i, (x, y) in enumerate(batch_loader()):
     forecast = pipeline.predict(
         context=torch.tensor(x),
         prediction_length=pred_len,
