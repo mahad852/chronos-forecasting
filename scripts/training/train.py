@@ -641,7 +641,7 @@ def main(
 
 def train_vital_signs(
     training_data_paths: List[str],
-    probability: Optional[float] = 1.0,
+    probability: List[float] = [1.0],
     context_length: int = 512,
     prediction_length: int = 64,
     min_past: int = 64,
