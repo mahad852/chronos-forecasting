@@ -5,11 +5,23 @@ import torch
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 import math 
 import scipy.io
+from dataloaders.vital_signs_loaders import VitalSignsDataset
+from torch.utils.data import DataLoader
 
 context_len = 600
 pred_len = 64
 
-data_path = "/home/mali2/datasets/vital_signs"
+data_path = "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
+
+test_loader = DataLoader(VitalSignsDataset(
+    user_ids=["GDN0001", "GDN0003"],
+    data_attribute="tfm_ecg2",
+    scenarios=["Resting", "tiltup"],
+    data_path=data_path,
+    is_train=False,
+    context_len=context_len,
+    pred_len=pred_len
+), batch_size=64, shuffle=False)
 
 # model_path = "scripts/output/run-15/checkpoint-final/ -> mini on 100000 720_1"
 model_path = "amazon/chronos-t5-tiny"
@@ -20,33 +32,6 @@ pipeline = ChronosPipeline.from_pretrained(
     device_map="cuda",  # use "cpu" for CPU inference and "mps" for Apple Silicon
     torch_dtype=torch.bfloat16,
 )
-
-batch_size = 32
-
-
-def batch_loader():
-    for folder in os.listdir(data_path):
-        for file in os.listdir(os.path.join(data_path, folder)):
-            if not ".mat" in file:
-                continue
-
-            data = scipy.io.loadmat(os.path.join(data_path, folder, file))
-            ecg2 = data["tfm_ecg2"].reshape(-1)
-
-            num_batches = math.ceil((ecg2.shape[0] - (context_len + pred_len)) / batch_size)
-
-            for batch_index in range(10):
-                start_index = (batch_index * batch_size) + (context_len + pred_len)
-                end_index = start_index + batch_size
-
-                batchX = []
-                batchY = []    
-
-                for i in range(start_index, end_index):
-                    batchX.append(ecg2[i: i + context_len])
-                    batchY.append(ecg2[i + context_len : i + context_len + pred_len])
-                
-                yield np.array(batchX), np.array(batchY)
 
 mses = []
 maes = []
@@ -62,7 +47,7 @@ for p_len in range(1, pred_len + 1):
     rmse_by_pred_len[p_len] = 0.0
     mae_by_pred_len[p_len] = 0.0
 
-for i, (x, y) in enumerate(batch_loader()):
+for i, (x, y) in enumerate(test_loader):
     forecast = pipeline.predict(
         context=torch.tensor(x),
         prediction_length=pred_len,
