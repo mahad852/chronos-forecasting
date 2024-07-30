@@ -676,6 +676,10 @@ def train_vital_signs(
     top_p: float = 1.0,
     seed: Optional[int] = None,
 ):
+    logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    logger = logging.getLogger(__file__)
+    logger.setLevel(logging.INFO)
+    
     if tf32 and not (
         torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8
     ):
