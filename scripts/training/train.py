@@ -676,10 +676,7 @@ def train_vital_signs(
     top_p: float = 1.0,
     seed: Optional[int] = None,
 ):
-    logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    logger = logging.getLogger(__file__)
-    logger.setLevel(logging.INFO)
-    
+
     if tf32 and not (
         torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8
     ):
@@ -804,6 +801,7 @@ def train_vital_signs(
         torch_compile=torch_compile,
         ddp_find_unused_parameters=False,
         remove_unused_columns=False,
+        resume_from_checkpoint=True
     )
 
     # Create Trainer instance
@@ -814,19 +812,18 @@ def train_vital_signs(
     )
     log_on_main("Training", logger)
 
-    trainer.train()
+    trainer.train(resume_from_checkpoint=True)
 
-    if is_main_process():
-        model.save_pretrained(output_dir / "checkpoint-final")
-        save_training_info(
-            output_dir / 
-            "checkpoint-final", training_config=raw_training_config
-        )
+    model.save_pretrained(output_dir / "checkpoint-final")
+    save_training_info(
+        output_dir / 
+        "checkpoint-final", training_config=raw_training_config
+    )
     
     return model
 
+logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__file__)
+logger.setLevel(logging.INFO)
 if __name__ == "__main__":
-    logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    logger = logging.getLogger(__file__)
-    logger.setLevel(logging.INFO)
     app()
