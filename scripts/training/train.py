@@ -794,7 +794,8 @@ def train_vital_signs(
         save_strategy="steps",
         save_steps=save_steps,
         report_to=["tensorboard"],
-        max_steps=max_steps,
+        num_train_epochs=1,
+        # max_steps=max_steps,
         gradient_accumulation_steps=gradient_accumulation_steps,
         dataloader_num_workers=dataloader_num_workers,
         tf32=tf32,  # remove this if not using Ampere GPUs (e.g., A100)
