@@ -812,7 +812,8 @@ def train_vital_signs(
     )
     log_on_main("Training", logger)
 
-    trainer.train(resume_from_checkpoint=True)
+    resume_from_checkpoint = os.path.exists(os.path.join(output_dir, "run-0", "checkpoint-final"))
+    trainer.train(resume_from_checkpoint=resume_from_checkpoint)
 
     model.save_pretrained(output_dir / "checkpoint-final")
     save_training_info(
