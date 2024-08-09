@@ -3,7 +3,7 @@ from typing import List, Optional, Union
 
 import numpy as np
 from gluonts.dataset.arrow import ArrowWriter
-from datasets.vital_signs_dataset import VitalSignsDataset
+from custom_datasets.vital_signs_dataset import VitalSignsDataset
 
 import os
 
