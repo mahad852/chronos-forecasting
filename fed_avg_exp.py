@@ -23,7 +23,7 @@ from flwr.common import ndarrays_to_parameters
 from flwr.server import ServerApp, ServerConfig, ServerAppComponents
 from flwr.server.strategy import FedAvg
 
-from flwr.simulation import run_simulation, start_simulation
+from flwr.simulation import start_simulation
 
 context_len = 600
 pred_len = 60
@@ -84,7 +84,7 @@ def test(pipeline: ChronosPipeline, val_loader):
     rmses = []
     maes = []
 
-    for _, (x, y) in enumerate(val_loader):
+    for i, (x, y) in enumerate(val_loader):
         forecast = pipeline.predict(
             context=x,
             prediction_length=pred_len,
@@ -100,6 +100,9 @@ def test(pipeline: ChronosPipeline, val_loader):
         mses.append(mse)
         rmses.append(rmse)
         maes.append(mae)
+
+        if i == 20:
+            break
 
     return np.average(mses), np.average(rmses), np.average(maes)
 
