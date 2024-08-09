@@ -13,6 +13,8 @@ pred_len = 64
 
 data_path = "/home/x-mali3/datasets/vital_signs" # "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
 
+print(f"Data path: {data_path}. Loading vital signs data....")
+
 test_loader = DataLoader(VitalSignsDataset(
     user_ids=["GDN0001", "GDN0003"],
     data_attribute="tfm_ecg2",
@@ -22,6 +24,8 @@ test_loader = DataLoader(VitalSignsDataset(
     context_len=context_len,
     pred_len=pred_len
 ), batch_size=1, shuffle=False)
+
+print("Vital signs data loaded.")
 
 # model_path = "scripts/output/run-15/checkpoint-final/ -> mini on 100000 720_1"
 model_path = "amazon/chronos-t5-tiny"
