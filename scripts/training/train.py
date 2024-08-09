@@ -769,7 +769,7 @@ def train_vital_signs(
 
     # Add extra items to model config so that it's saved in the ckpt
     model.config.chronos_config = chronos_config.__dict__
-
+    return model
     shuffled_train_dataset = ChronosDataset(
         datasets=train_datasets,
         probabilities=probability,
