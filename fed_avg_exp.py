@@ -142,13 +142,22 @@ class FlowerClient(NumPyClient):
         return float(rmse), len(self.valloader), {"mae": mae, "mse": mse}
     
 
-def client_fn(context: Context):
+# def client_fn(context: Context):
+#     """Returns a FlowerClient containing its data partition."""
+
+#     partition_id = int(context.node_config["partition-id"])
+
+#     return FlowerClient(train_data_path=f"vital_signs_arrow/client0{partition_id + 1}.arrow", 
+#                         valloader=DataLoader(client_ds[partition_id], batch_size=batch_size, shuffle=False)).to_client()
+
+def client_fn(cid : str):
     """Returns a FlowerClient containing its data partition."""
 
-    partition_id = int(context.node_config["partition-id"])
+    partition_id = int(cid)
 
     return FlowerClient(train_data_path=f"vital_signs_arrow/client0{partition_id + 1}.arrow", 
                         valloader=DataLoader(client_ds[partition_id], batch_size=batch_size, shuffle=False)).to_client()
+
 
 # Define metric aggregation function
 def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
@@ -190,14 +199,34 @@ def server_fn(context: Context):
 server_app = ServerApp(server_fn=server_fn)
 
 
-run_simulation(
-    server_app=server_app, client_app=client_app, num_supernodes=3
+# run_simulation(
+#     server_app=server_app, client_app=client_app, num_supernodes=3
+# )
+
+
+model = load_model(model_id=model_path)
+ndarrays = get_params(model)
+global_model_init = ndarrays_to_parameters(ndarrays)
+strategy = FedAvg(
+    fraction_fit=0.1,  # 10% clients sampled each round to do fit()
+    fraction_evaluate=0.5,  # 50% clients sample each round to do evaluate()
+    evaluate_metrics_aggregation_fn=weighted_average,  # callback defined earlier
+    initial_parameters=global_model_init,  # initialised global model
 )
 
 # each client gets 1xCPU (this is the default if no resources are specified)
-my_client_resources = {'num_cpus': 1, 'num_gpus': 0.33}
+my_client_resources = {'num_cpus': 1, 'num_gpus': 0.5}
 
-start_simulation(server_app=server_app, client_app=client_app, num_supernodes=3, client_resources=my_client_resources)
+
+start_simulation(
+    client_fn=client_fn, # A function to run a _virtual_ client when required
+    num_clients=3, # Total number of clients available
+    config=ServerConfig(num_rounds=3), # Specify number of FL rounds
+    strategy=strategy, # A Flower strategy
+    ray_init_args = {'num_cpus': 2, 'num_gpus': 4},
+    client_resources=my_client_resources
+)
+
 
 # pipeline = ChronosPipeline.from_pretrained(
 #     model_path,
