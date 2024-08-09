@@ -27,7 +27,7 @@ for num in range(1, 31):
 test_loader = DataLoader(VitalSignsDataset(
     user_ids=user_ids,
     data_attribute="tfm_ecg2",
-    scenarios=["Resting", "tiltup"],
+    scenarios=["Resting"],
     data_path=data_path,
     is_train=False,
     context_len=context_len,
