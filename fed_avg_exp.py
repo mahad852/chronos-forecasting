@@ -223,7 +223,7 @@ start_simulation(
     num_clients=3, # Total number of clients available
     config=ServerConfig(num_rounds=3), # Specify number of FL rounds
     strategy=strategy, # A Flower strategy
-    ray_init_args = {'num_cpus': 2, 'num_gpus': 4},
+    ray_init_args = {'num_cpus': 2, 'num_gpus': 1},
     client_resources=my_client_resources
 )
 
