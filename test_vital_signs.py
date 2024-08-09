@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 context_len = 600
 pred_len = 64
 
-data_path = "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
+data_path = "/home/x-mali3/datasets/vital_signs" # "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
 
 test_loader = DataLoader(VitalSignsDataset(
     user_ids=["GDN0001", "GDN0003"],
