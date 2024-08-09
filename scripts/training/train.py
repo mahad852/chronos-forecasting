@@ -806,10 +806,6 @@ def train_vital_signs(
     trainer.train(resume_from_checkpoint=resume_from_checkpoint)
 
     model.save_pretrained(output_dir / "checkpoint-final")
-    save_training_info(
-        output_dir / 
-        "checkpoint-final", training_config=raw_training_config
-    )
     
     return model
 
