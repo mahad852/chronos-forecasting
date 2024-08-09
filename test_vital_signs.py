@@ -1,3 +1,5 @@
+print("TESTING VITAL SIGNS CHRONOS")
+
 import numpy as np
 from chronos import ChronosPipeline
 import os
