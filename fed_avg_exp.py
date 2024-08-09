@@ -88,13 +88,13 @@ class FlowerClient(NumPyClient):
         # send statistics back to the server
         return float(loss), len(self.valloader), {"accuracy": accuracy}
 
-model = ChronosPipeline.from_pretrained(
+pipeline = ChronosPipeline.from_pretrained(
     model_path,
     device_map="cuda",  # use "cpu" for CPU inference and "mps" for Apple Silicon
     torch_dtype=torch.bfloat16,
 )
 
-model = train_vital_signs(training_data_paths=["vital_signs_arrow/client01.arrow"], model=model, context_length=context_len, prediction_length=pred_len, output_dir="weights/client01/", max_steps=10)
+model = train_vital_signs(training_data_paths=["vital_signs_arrow/client01.arrow"], model=pipeline.model, context_length=context_len, prediction_length=pred_len, output_dir="weights/client01/", max_steps=10)
 
 print(get_params(model))
 
