@@ -641,6 +641,7 @@ def main(
 
 def train_vital_signs(
     training_data_paths: List[str],
+    model,
     probability: List[float] = [1.0],
     context_length: int = 512,
     prediction_length: int = 64,
@@ -653,7 +654,6 @@ def train_vital_signs(
     optim: str = "adamw_torch_fused",
     shuffle_buffer_length: int = 100,
     gradient_accumulation_steps: int = 2,
-    model_id: str = "google/t5-efficient-tiny",
     model_type: str = "seq2seq",
     random_init: bool = False,
     tie_embeddings: bool = False,
@@ -740,16 +740,6 @@ def train_vital_signs(
 
     log_on_main("Initializing model", logger)
 
-    model = load_model(
-        model_id=model_id,
-        model_type=model_type,
-        vocab_size=n_tokens,
-        random_init=random_init,
-        tie_embeddings=tie_embeddings,
-        pad_token_id=pad_token_id,
-        eos_token_id=eos_token_id,
-    )
-
     chronos_config = ChronosConfig(
         tokenizer_class=tokenizer_class,
         tokenizer_kwargs=tokenizer_kwargs,
@@ -769,7 +759,7 @@ def train_vital_signs(
 
     # Add extra items to model config so that it's saved in the ckpt
     model.config.chronos_config = chronos_config.__dict__
-    return model
+
     shuffled_train_dataset = ChronosDataset(
         datasets=train_datasets,
         probabilities=probability,
