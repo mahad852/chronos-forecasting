@@ -76,8 +76,8 @@ class VitalSignsDataset(Dataset):
                 self.data = self.data[int(total * 0.60):]
             
             scaler = StandardScaler()
-            model = scaler.fit(self.data)
-            self.data = model.transform(self.data)
+            model = scaler.fit(self.data.reshape((-1, 1)))
+            self.data = model.transform(self.data.reshape((-1, 1))).reshape((-1))
 
         return self.data
     
