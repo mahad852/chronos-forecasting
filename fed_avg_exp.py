@@ -23,7 +23,7 @@ from flwr.common import ndarrays_to_parameters
 from flwr.server import ServerApp, ServerConfig, ServerAppComponents
 from flwr.server.strategy import FedAvg
 
-from flwr.simulation import run_simulation
+from flwr.simulation import run_simulation, start_simulation
 
 context_len = 600
 pred_len = 60
@@ -194,6 +194,10 @@ run_simulation(
     server_app=server_app, client_app=client_app, num_supernodes=3
 )
 
+# each client gets 1xCPU (this is the default if no resources are specified)
+my_client_resources = {'num_cpus': 1, 'num_gpus': 0.33}
+
+start_simulation(server_app=server_app, client_app=client_app, num_supernodes=3, client_resources=my_client_resources)
 
 # pipeline = ChronosPipeline.from_pretrained(
 #     model_path,
