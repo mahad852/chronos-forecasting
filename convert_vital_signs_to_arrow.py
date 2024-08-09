@@ -42,7 +42,7 @@ if __name__ == "__main__":
     if not os.path.exists("./vital_signs_arrow"):
         os.mkdir("./vital_signs_arrow")
 
-    data_path="/home/x-mali3/datasets/vital_signs", #"/home/mali2/datasets/vital_signs", 
+    data_path="/home/x-mali3/datasets/vital_signs" #"/home/mali2/datasets/vital_signs", 
     context_len = 600
     pred_len = 60
 
