@@ -1,11 +1,12 @@
 from torch.utils.data import Dataset
 
-from torch.utils.data import DataLoader
 from typing import List
 
 import os
 
 import scipy.io
+
+from sklearn.preprocessing import StandardScaler
 
 class VitalSignsDataset(Dataset):
     def __init__(self, 
@@ -73,7 +74,11 @@ class VitalSignsDataset(Dataset):
                 self.data = self.data[:int(total * 0.60)]
             else:
                 self.data = self.data[int(total * 0.60):]
-        
+            
+            scaler = StandardScaler()
+            model = scaler.fit(self.data)
+            self.data = model.transform(self.data)
+
         return self.data
     
     def clear_data(self):
