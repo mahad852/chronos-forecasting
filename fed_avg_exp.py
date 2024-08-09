@@ -10,7 +10,7 @@ from flwr.client import NumPyClient
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 import numpy as np
 
-from datasets.vital_signs_dataset import VitalSignsDataset
+from custom_datasets.vital_signs_dataset import VitalSignsDataset
 from torch.utils.data import DataLoader
 
 
