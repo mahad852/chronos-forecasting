@@ -68,19 +68,21 @@ class FlowerClient(NumPyClient):
             torch_dtype=torch.bfloat16,
         )
 
+        self.model = load_model(model_id=model_path)
+
     def fit(self, parameters, config):
         """This method trains the model using the parameters sent by the
         server on the dataset of this client. At then end, the parameters
         of the locally trained model are communicated back to the server"""
 
         # copy parameters sent by the server into client's local model
-        set_params(self.pipeline.model, parameters)
+        set_params(self.model, parameters)
 
         # do local training (call same function as centralised setting)
-        self.pipeline.model = train_vital_signs(training_data_paths=[self.train_data_path], model=self.model, context_length=context_len, prediction_length=pred_len, max_steps=5000)
+        self.model = train_vital_signs(training_data_paths=[self.train_data_path], model=self.model, context_length=context_len, prediction_length=pred_len, max_steps=5000)
 
         # return the model parameters to the server as well as extra info (number of training examples in this case)
-        return get_params(self.pipeline.model), 5000, {}
+        return get_params(self.model), 5000, {}
 
     def evaluate(self, parameters: NDArrays, config: Dict[str, Scalar]):
         """Evaluate the model sent by the server on this client's
@@ -98,15 +100,12 @@ pipeline = ChronosPipeline.from_pretrained(
     torch_dtype=torch.bfloat16,
 )
 
-pipeline.model = load_model(model_id=model_path)
+model = load_model(model_id=model_path)
+model = train_vital_signs(training_data_paths=["vital_signs_arrow/client01.arrow"], model=model, context_length=context_len, prediction_length=pred_len, output_dir="weights/client01/", max_steps=10)
 
-pipeline.model.config.prediction_length = pred_len
-pipeline.model.config.context_length = context_len
-
-model = train_vital_signs(training_data_paths=["vital_signs_arrow/client01.arrow"], model=pipeline.model, context_length=context_len, prediction_length=pred_len, output_dir="weights/client01/", max_steps=10)
-
-get_params(model)
+params = get_params(model)
 set_params(model, get_params(model))
+set_params(pipeline.model, params)
 
 print("Param setting and getting successful")
 
