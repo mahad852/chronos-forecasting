@@ -21,7 +21,7 @@ test_loader = DataLoader(VitalSignsDataset(
     is_train=False,
     context_len=context_len,
     pred_len=pred_len
-), batch_size=64, shuffle=False)
+), batch_size=1, shuffle=False)
 
 # model_path = "scripts/output/run-15/checkpoint-final/ -> mini on 100000 720_1"
 model_path = "amazon/chronos-t5-tiny"
@@ -32,6 +32,8 @@ pipeline = ChronosPipeline.from_pretrained(
     device_map="cuda",  # use "cpu" for CPU inference and "mps" for Apple Silicon
     torch_dtype=torch.bfloat16,
 )
+
+print(f"Chronos {model_path} loaded successfully.")
 
 mses = []
 maes = []
@@ -53,6 +55,8 @@ for i, (x, y) in enumerate(test_loader):
         prediction_length=pred_len,
         num_samples=20,
     )
+
+    print(f"===DEBUG===== {i} prediction made.")
 
     forecast = np.quantile(forecast.numpy(), 0.5, axis=1)
 
