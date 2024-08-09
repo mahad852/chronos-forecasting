@@ -100,6 +100,9 @@ pipeline = ChronosPipeline.from_pretrained(
 
 pipeline.model = load_model(model_id=model_path)
 
+pipeline.model.config.prediction_length = pred_len
+pipeline.model.config.context_length = context_len
+
 model = train_vital_signs(training_data_paths=["vital_signs_arrow/client01.arrow"], model=pipeline.model, context_length=context_len, prediction_length=pred_len, output_dir="weights/client01/", max_steps=10)
 
 get_params(model)
