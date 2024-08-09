@@ -1,5 +1,3 @@
-print("TESTING VITAL SIGNS CHRONOS")
-
 import numpy as np
 from chronos import ChronosPipeline
 import os
@@ -15,10 +13,19 @@ pred_len = 64
 
 data_path = "/home/x-mali3/datasets/vital_signs" # "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
 
-print(f"Data path: {data_path}. Loading vital signs data....")
+print(f"Data path: {data_path}. Loading vital signs data...")
+
+
+user_ids = []
+for num in range(1, 31):
+    if num < 10:
+        user_id = f"GDN000{num}"
+    else:
+        user_id = f"GDN00{num}"
+    user_ids.append(user_id)
 
 test_loader = DataLoader(VitalSignsDataset(
-    user_ids=["GDN0001", "GDN0003"],
+    user_ids=user_ids,
     data_attribute="tfm_ecg2",
     scenarios=["Resting", "tiltup"],
     data_path=data_path,
@@ -61,8 +68,6 @@ for i, (x, y) in enumerate(test_loader):
         prediction_length=pred_len,
         num_samples=20,
     )
-
-    print(f"===DEBUG===== {i} prediction made.")
 
     forecast = np.quantile(forecast.numpy(), 0.5, axis=1)
 
