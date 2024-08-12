@@ -25,11 +25,11 @@ from flwr.server.strategy import FedAvg
 
 from flwr.simulation import start_simulation
 
-context_len = 600
-pred_len = 60
+context_len = 512
+pred_len = 64
 model_path = "amazon/chronos-t5-tiny"
 
-data_path = "/home/x-mali3/datasets/vital_signs" # "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
+data_path = "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
 batch_size = 16
 max_steps = 10
 
@@ -42,7 +42,7 @@ client_ds = [
         scenarios=["resting"],
         context_len=context_len, pred_len=pred_len, 
         data_path=data_path, 
-        is_train=True,
+        is_train=False,
     ),
 
     VitalSignsDataset(
@@ -51,7 +51,7 @@ client_ds = [
         scenarios=["resting"],
         context_len=context_len, pred_len=pred_len, 
         data_path=data_path, 
-        is_train=True,
+        is_train=False,
     ),
 
     VitalSignsDataset(
@@ -60,7 +60,7 @@ client_ds = [
         scenarios=["resting"],
         context_len=context_len, pred_len=pred_len, 
         data_path=data_path, 
-        is_train=True,
+        is_train=False,
     ),
 
 ]
@@ -142,6 +142,8 @@ class FlowerClient(NumPyClient):
         # do local evaluation (call same function as centralised setting)
         mse, rmse, mae = test(self.pipeline, self.valloader)
         # send statistics back to the server
+
+        print(f"===============MSE: {mse}, RMSE: {rmse}, MAE: {mae} ====================")
         return float(rmse), len(self.valloader), {"mae": mae, "mse": mse}
     
 
@@ -169,76 +171,22 @@ model = load_model(model_id=model_path)
 ndarrays = get_params(model)
 global_model_init = ndarrays_to_parameters(ndarrays)
 strategy = FedAvg(
-    fraction_fit=0.1,  # 10% clients sampled each round to do fit()
-    fraction_evaluate=0.5,  # 50% clients sample each round to do evaluate()
     evaluate_metrics_aggregation_fn=weighted_average,  # callback defined earlier
-    initial_parameters=global_model_init,  # initialised global model
+    initial_parameters=global_model_init,  # initialised global model,
+    min_fit_clients=len(client_ds),
+    min_evaluate_clients=len(client_ds),
+    min_available_clients=len(client_ds)
 )
 
 # each client gets 1xCPU (this is the default if no resources are specified)
-my_client_resources = {'num_cpus': 1, 'num_gpus': 1/3}
+my_client_resources = {'num_cpus': 1, 'num_gpus': 1/len(client_ds)}
 
 
 start_simulation(
     client_fn=client_fn, # A function to run a _virtual_ client when required
-    num_clients=3, # Total number of clients available
-    config=ServerConfig(num_rounds=3), # Specify number of FL rounds
+    num_clients=len(client_ds), # Total number of clients available
+    config=ServerConfig(num_rounds=num_rounds), # Specify number of FL rounds
     strategy=strategy, # A Flower strategy
     ray_init_args = {'num_cpus': 2, 'num_gpus': 1},
     client_resources=my_client_resources
 )
-
-
-# pipeline = ChronosPipeline.from_pretrained(
-#     model_path,
-#     device_map="cuda",  # use "cpu" for CPU inference and "mps" for Apple Silicon
-#     torch_dtype=torch.bfloat16,
-# )
-
-# model = load_model(model_id=model_path)
-# model = train_vital_signs(training_data_paths=["vital_signs_arrow/client01.arrow"], model=model, context_length=context_len, prediction_length=pred_len, output_dir="weights/client01/", max_steps=10)
-
-# params = get_params(model)
-# set_params(model, get_params(model))
-# set_params(pipeline.model, params)
-
-# print("Param setting and getting successful")
-
-# print("Testing pipeline prediction")
-
-
-# print(f"Data path: {data_path}. Loading vital signs data...")
-
-
-# user_ids = []
-# for num in range(1, 31):
-#     if num < 10:
-#         user_id = f"GDN000{num}"
-#     else:
-#         user_id = f"GDN00{num}"
-#     user_ids.append(user_id)
-
-# test_loader = DataLoader(VitalSignsDataset(
-#     user_ids=user_ids,
-#     data_attribute="tfm_ecg2",
-#     scenarios=["Resting"],
-#     data_path=data_path,
-#     is_train=False,
-#     context_len=context_len,
-#     pred_len=pred_len
-# ), batch_size=1, shuffle=False)
-
-# print("Vital signs data loaded.")
-
-# for _, (x, y) in enumerate(test_loader):
-#     forecast = pipeline.predict(
-#         context=x,
-#         prediction_length=pred_len,
-#         num_samples=20,
-#     )
-
-#     forecast = np.quantile(forecast.numpy(), 0.5, axis=1)
-
-#     mse = mean_squared_error(y, forecast)
-
-#     print("MSE:", mse)
