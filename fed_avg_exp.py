@@ -165,7 +165,8 @@ def client_fn(context: Context):
     partition_id = int(context.node_config["partition-id"])
 
     return FlowerClient(train_data_path=f"vital_signs_arrow/client0{partition_id + 1}.arrow", 
-                        valloader=DataLoader(client_ds[partition_id], batch_size=batch_size, shuffle=False)).to_client()
+                        valloader=DataLoader(client_ds[partition_id], batch_size=batch_size, shuffle=False),
+                        cid=partition_id + 1).to_client()
 
 # Define metric aggregation function
 def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
