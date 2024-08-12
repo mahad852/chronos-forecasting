@@ -21,9 +21,11 @@ from flwr.common import Metrics
 
 from flwr.common import ndarrays_to_parameters
 from flwr.server import ServerApp, ServerConfig, ServerAppComponents
-from flwr.server.strategy import FedAvg
+from custom_fl.CustomFedAvg import CustomFedAvg
 
 from flwr.simulation import start_simulation
+
+import os
 
 context_len = 512
 pred_len = 64
@@ -34,6 +36,12 @@ batch_size = 16
 max_steps = 10
 
 num_rounds = 5
+
+if not os.path.exists("logs"):
+    os.mkdir("logs")
+
+if not os.path.exists("logs/fed_avg"):
+    os.mkdir("logs/fed_avg")
 
 client_ds = [
     VitalSignsDataset(
@@ -107,7 +115,7 @@ def test(pipeline: ChronosPipeline, val_loader):
     return np.average(mses), np.average(rmses), np.average(maes)
 
 class FlowerClient(NumPyClient):
-    def __init__(self, train_data_path, valloader) -> None:
+    def __init__(self, train_data_path:str, valloader:DataLoader, cid:int) -> None:
         super().__init__()
 
         self.train_data_path = train_data_path
@@ -119,6 +127,8 @@ class FlowerClient(NumPyClient):
         )
 
         self.model = load_model(model_id=model_path)
+
+        self.client_id = cid
 
     def fit(self, parameters, config):
         """This method trains the model using the parameters sent by the
@@ -141,10 +151,12 @@ class FlowerClient(NumPyClient):
         set_params(self.pipeline.model, parameters)
         # do local evaluation (call same function as centralised setting)
         mse, rmse, mae = test(self.pipeline, self.valloader)
-        # send statistics back to the server
+        
+        with open("logs/fed_avg/eval_stats.txt", "a") as f:
+            f.write(f"Client: {self.client_id}; MSE: {mse} | RMSE: {rmse} | MAE: {mae}\n")
 
-        print(f"===============MSE: {mse}, RMSE: {rmse}, MAE: {mae} ====================")
-        return float(rmse), len(self.valloader), {"mae": mae, "mse": mse}
+        # send statistics back to the server
+        return float(rmse), len(self.valloader), {"mae": mae, "mse": mse, "rmse": rmse}
     
 
 def client_fn(context: Context):
@@ -160,8 +172,12 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
     # Multiply accuracy of each client by number of examples used
     maes = [num_examples * m["mae"] for num_examples, m in metrics]
     mses = [num_examples * m["mse"] for num_examples, m in metrics]
+    rmses = [num_examples * m["rmse"] for num_examples, m in metrics]
 
     examples = [num_examples for num_examples, _ in metrics]
+
+    with open("logs/fed_avg/eval_stats.txt", "a") as f:
+        f.write(f"MSE: {sum(mses)/sum(examples)} | RMSE: {sum(rmses)/sum(examples)} | MAE: {sum(maes)/sum(examples)}\n\n")
 
     # Aggregate and return custom metric (weighted average)
     return {"mae": sum(maes) / sum(examples), "mse": sum(mses) / sum(examples)}
@@ -170,7 +186,7 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
 model = load_model(model_id=model_path)
 ndarrays = get_params(model)
 global_model_init = ndarrays_to_parameters(ndarrays)
-strategy = FedAvg(
+strategy = CustomFedAvg(
     evaluate_metrics_aggregation_fn=weighted_average,  # callback defined earlier
     initial_parameters=global_model_init,  # initialised global model,
     min_fit_clients=len(client_ds),
