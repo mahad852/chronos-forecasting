@@ -32,11 +32,13 @@ pred_len = 64
 model_path = "amazon/chronos-t5-tiny"
 
 data_path = "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
-batch_size = 64
 
-max_steps = 3000
+val_batch_size = 64
+val_batches = 20 # 2000
 
-num_rounds = 5
+max_steps = 10 # 3000
+
+num_rounds = 1
 
 if not os.path.exists("logs"):
     os.mkdir("logs")
@@ -87,13 +89,23 @@ def get_params(model):
     """Extract model parameters as a list of NumPy arrays."""
     return [val.cpu().numpy() for _, val in model.state_dict().items()]
 
+def batch_loader(indices : List[int], dataset: VitalSignsDataset, batch_size:int):
+    for start_index in range(0, len(indices), batch_size):
+        end_index = min(len(indices), start_index + batch_size)
+        batch_indices = indices[start_index:end_index]
+        batch_x, batch_y = [], []
+        for index in batch_indices:
+            x, y = dataset[index]
+            batch_x.append(x)
+            batch_y.append(y)
+        yield torch.tensor(np.array(batch_x)), torch.tensor(np.array(batch_y))
 
-def test(pipeline: ChronosPipeline, val_loader):
+def test(pipeline: ChronosPipeline, dataset: VitalSignsDataset, indices):
     mses = []
     rmses = []
     maes = []
 
-    for i, (x, y) in enumerate(val_loader):
+    for _, (x, y) in enumerate(batch_loader(indices, dataset, val_batch_size)):
         forecast = pipeline.predict(
             context=x,
             prediction_length=pred_len,
@@ -110,17 +122,16 @@ def test(pipeline: ChronosPipeline, val_loader):
         rmses.append(rmse)
         maes.append(mae)
 
-        if i == 20:
-            break
-
     return np.average(mses), np.average(rmses), np.average(maes)
 
 class FlowerClient(NumPyClient):
-    def __init__(self, train_data_path:str, valloader:DataLoader, cid:int) -> None:
+    def __init__(self, train_data_path: str, valdataset: VitalSignsDataset, cid: int) -> None:
         super().__init__()
 
         self.train_data_path = train_data_path
-        self.valloader = valloader
+        self.valdataset = valdataset
+        self.val_indices = sorted(np.random.permutation(len(valdataset))[: (val_batches * val_batch_size)])
+
         self.pipeline = ChronosPipeline.from_pretrained(
             model_path,
             device_map="cuda",  # use "cpu" for CPU inference and "mps" for Apple Silicon
@@ -151,13 +162,13 @@ class FlowerClient(NumPyClient):
 
         set_params(self.pipeline.model, parameters)
         # do local evaluation (call same function as centralised setting)
-        mse, rmse, mae = test(self.pipeline, self.valloader)
+        mse, rmse, mae = test(self.pipeline, self.valdataset, self.val_indices)
         
         with open("logs/fed_avg/eval_stats.txt", "a") as f:
             f.write(f"Client: {self.client_id}; MSE: {mse} | RMSE: {rmse} | MAE: {mae}\n")
 
         # send statistics back to the server
-        return float(rmse), len(self.valloader), {"mae": mae, "mse": mse, "rmse": rmse}
+        return float(rmse), len(self.val_indices), {"mae": mae, "mse": mse, "rmse": rmse}
     
 
 def client_fn(context: Context):
@@ -166,7 +177,7 @@ def client_fn(context: Context):
     partition_id = int(context.node_config["partition-id"])
 
     return FlowerClient(train_data_path=f"vital_signs_arrow/client0{partition_id + 1}.arrow", 
-                        valloader=DataLoader(client_ds[partition_id], batch_size=batch_size, shuffle=False),
+                        valdataset=client_ds[partition_id],
                         cid=partition_id + 1).to_client()
 
 # Define metric aggregation function
