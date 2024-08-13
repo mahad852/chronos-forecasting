@@ -91,7 +91,7 @@ def batch_loader(indices : List[int], dataset: VitalSignsDataset, batch_size:int
 num_batches = 10
 indices = np.random.permutation(len(client_ds[0]))[: (num_batches * batch_size)]
 
-for batch in batch_loader(indices, client_ds[0], batch_size):
-    print(batch.shape)
+for x, y in batch_loader(indices, client_ds[0], batch_size):
+    print(x.shape, y.shape)
 
 # print(loader[0], loader[-1], len(loader))
