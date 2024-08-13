@@ -32,8 +32,9 @@ pred_len = 64
 model_path = "amazon/chronos-t5-tiny"
 
 data_path = "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
-batch_size = 16
-max_steps = 10
+batch_size = 64
+
+max_steps = 3000
 
 num_rounds = 5
 
