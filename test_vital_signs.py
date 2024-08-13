@@ -8,10 +8,10 @@ import scipy.io
 from custom_datasets.vital_signs_dataset import VitalSignsDataset
 from torch.utils.data import DataLoader
 
-context_len = 600
+context_len = 512
 pred_len = 64
 
-data_path = "/home/x-mali3/datasets/vital_signs" # "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
+data_path = "/home/mali2/datasets/vital_signs" # "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
 
 print(f"Data path: {data_path}. Loading vital signs data...")
 

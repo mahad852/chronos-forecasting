@@ -1,13 +1,8 @@
 from chronos import ChronosPipeline
 from scripts.training.train import train_vital_signs, load_model
-from collections import OrderedDict
-from typing import Dict, Tuple
 
 import torch
-from flwr.common import NDArrays, Scalar
-from flwr.client import NumPyClient
 
-from sklearn.metrics import mean_absolute_error, mean_squared_error
 import numpy as np
 
 from custom_datasets.vital_signs_dataset import VitalSignsDataset
@@ -17,15 +12,11 @@ from flwr.common import Context
 from flwr.client import ClientApp
 
 from typing import List
-from flwr.common import Metrics
-
-from flwr.common import ndarrays_to_parameters
-from flwr.server import ServerApp, ServerConfig, ServerAppComponents
-from custom_fl.CustomFedAvg import CustomFedAvg
-
-from flwr.simulation import start_simulation
 
 import time
+
+from sklearn.metrics import mean_absolute_error, mean_squared_error
+
 
 context_len = 512
 pred_len = 64
@@ -88,10 +79,43 @@ def batch_loader(indices : List[int], dataset: VitalSignsDataset, batch_size:int
         yield torch.tensor(np.array(batch_x)), torch.tensor(np.array(batch_y))
 
 
-num_batches = 10
+num_batches = 100
 indices = np.random.permutation(len(client_ds[0]))[: (num_batches * batch_size)]
 
-for x, y in batch_loader(indices, client_ds[0], batch_size):
-    print(x.shape, y.shape)
+model_path = "amazon/chronos-t5-tiny"
+
+
+pipeline = ChronosPipeline.from_pretrained(
+    model_path,
+    device_map="cuda",  # use "cpu" for CPU inference and "mps" for Apple Silicon
+    torch_dtype=torch.bfloat16,
+)
+
+print(f"Chronos {model_path} loaded successfully.")
+
+times = []
+
+for _ in range(5):
+    start_time = time.time()
+    for x, y in batch_loader(indices, client_ds[0], batch_size):
+        forecast = pipeline.predict(
+            context=x,
+            prediction_length=pred_len,
+            num_samples=20,
+        )
+
+        forecast = np.quantile(forecast.numpy(), 0.5, axis=1)
+
+        mse = mean_squared_error(y, forecast)
+        rmse = np.sqrt(mse)
+        mae = mean_absolute_error(y, forecast)
+    end_time = time.time()
+
+    times.append(end_time - start_time)
+
+print("Times:", times)
+print("Average time:", np.mean(times))
+print("Std time:", np.std(times))
+print("Average time per batch:", np.mean(times)/num_batches)
 
 # print(loader[0], loader[-1], len(loader))
