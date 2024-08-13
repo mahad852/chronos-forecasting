@@ -38,7 +38,7 @@ val_batches = 2000
 
 max_steps = 3000
 
-num_rounds = 1
+num_rounds = 5
 
 if not os.path.exists("logs"):
     os.mkdir("logs")
@@ -208,7 +208,7 @@ strategy = CustomFedAvg(
 )
 
 # each client gets 1xCPU (this is the default if no resources are specified)
-my_client_resources = {'num_cpus': 1, 'num_gpus': 1/len(client_ds)}
+my_client_resources = {'num_cpus': 1, 'num_gpus': 2/len(client_ds)}
 
 
 start_simulation(
@@ -216,6 +216,6 @@ start_simulation(
     num_clients=len(client_ds), # Total number of clients available
     config=ServerConfig(num_rounds=num_rounds), # Specify number of FL rounds
     strategy=strategy, # A Flower strategy
-    ray_init_args = {'num_cpus': 2, 'num_gpus': 1},
+    ray_init_args = {'num_cpus': 1, 'num_gpus': 2},
     client_resources=my_client_resources
 )
