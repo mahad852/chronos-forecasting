@@ -85,7 +85,7 @@ def batch_loader(indices : List[int], dataset: VitalSignsDataset, batch_size:int
             x, y = dataset[index]
             batch_x.append(x)
             batch_y.append(y)
-        yield torch.tensor(x), torch.tensor(y)
+        yield torch.tensor(batch_x), torch.tensor(batch_y)
 
 
 num_batches = 10
