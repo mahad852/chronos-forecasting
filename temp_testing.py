@@ -77,11 +77,11 @@ loader = DataLoader(client_ds[0], batch_size=batch_size, shuffle=False)
 
 def batch_loader(indices : List[int], dataset: VitalSignsDataset, batch_size:int):
     indices = sorted(indices)
-
     for start_index in range(0, len(indices), batch_size):
         end_index = min(len(indices), start_index + batch_size)
-        yield dataset[indices[start_index:end_index]]
-
+        batch_indices = indices[start_index:end_index]
+        batch = [dataset[index] for index in batch_indices]
+        yield torch.tensor(batch)
 
 
 num_batches = 10
