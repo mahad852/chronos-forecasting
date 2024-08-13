@@ -122,6 +122,7 @@ print(f"Chronos {model_path} loaded successfully.")
 
 
 npy_model = np.load("logs/fed_avg/round-5-weights.npz")
+npy_params = [npy_model[file] for file in npy_model.files]
 
 def set_params(model, parameters):
     """Replace model parameters with those passed as `parameters`."""
@@ -133,5 +134,7 @@ def set_params(model, parameters):
 
 # print(loader[0], loader[-1], len(loader))
 
-set_params(pipeline.model, npy_model)
+
+
+set_params(pipeline.model, npy_params)
 print("Params were set successfully.")
