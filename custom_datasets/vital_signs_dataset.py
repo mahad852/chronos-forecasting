@@ -6,7 +6,7 @@ import os
 
 import scipy.io
 
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 class VitalSignsDataset(Dataset):
     def __init__(self, 
@@ -75,7 +75,7 @@ class VitalSignsDataset(Dataset):
             else:
                 self.data = self.data[int(total * 0.60):]
             
-            scaler = StandardScaler()
+            scaler = MinMaxScaler()
             model = scaler.fit(self.data.reshape((-1, 1)))
             self.data = model.transform(self.data.reshape((-1, 1))).reshape((-1))
 
