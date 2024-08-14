@@ -192,7 +192,7 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
     maes = [num_examples * m["mae"] for num_examples, m in metrics]
     mses = [num_examples * m["mse"] for num_examples, m in metrics]
     rmses = [num_examples * m["rmse"] for num_examples, m in metrics]
-    smapes = [num_examples * m["smapes"] for num_examples, m in metrics]
+    smapes = [num_examples * m["smape"] for num_examples, m in metrics]
 
     examples = [num_examples for num_examples, _ in metrics]
 
