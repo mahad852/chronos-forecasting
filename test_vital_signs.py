@@ -7,9 +7,13 @@ import math
 import scipy.io
 from custom_datasets.vital_signs_dataset import VitalSignsDataset
 from torch.utils.data import DataLoader
+from typing import List
 
 context_len = 512
 pred_len = 64
+
+batch_size = 64
+batches = 2000
 
 data_path = "/home/mali2/datasets/vital_signs" # "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
 
@@ -24,7 +28,7 @@ for num in range(1, 31):
         user_id = f"GDN00{num}"
     user_ids.append(user_id)
 
-test_loader = DataLoader(VitalSignsDataset(
+test_dataset = VitalSignsDataset(
     user_ids=user_ids,
     data_attribute="tfm_ecg2",
     scenarios=["Resting"],
@@ -32,7 +36,9 @@ test_loader = DataLoader(VitalSignsDataset(
     is_train=False,
     context_len=context_len,
     pred_len=pred_len
-), batch_size=1, shuffle=False)
+)
+
+indices = sorted(np.random.permutation(len(test_dataset))[: (batches * batch_size)])
 
 print("Vital signs data loaded.")
 
@@ -48,6 +54,18 @@ pipeline = ChronosPipeline.from_pretrained(
 
 print(f"Chronos {model_path} loaded successfully.")
 
+def batch_loader(indices : List[int], dataset: VitalSignsDataset, batch_size: int):
+    for start_index in range(0, len(indices), batch_size):
+        end_index = min(len(indices), start_index + batch_size)
+        batch_indices = indices[start_index:end_index]
+        batch_x, batch_y = [], []
+        for index in batch_indices:
+            x, y = dataset[index]
+            batch_x.append(x)
+            batch_y.append(y)
+        yield torch.tensor(np.array(batch_x)), torch.tensor(np.array(batch_y))
+
+
 mses = []
 maes = []
 
@@ -62,7 +80,7 @@ for p_len in range(1, pred_len + 1):
     rmse_by_pred_len[p_len] = 0.0
     mae_by_pred_len[p_len] = 0.0
 
-for i, (x, y) in enumerate(test_loader):
+for i, (x, y) in enumerate(batch_loader(indices, test_dataset, batch_size)):
     forecast = pipeline.predict(
         context=x,
         prediction_length=pred_len,
@@ -101,7 +119,7 @@ if not os.path.exists("logs"):
     os.mkdir("logs")
 
 # with open(os.path.join("logs", f"Chronos_Mini_Run8_{context_len}_{pred_len}.csv"), "w") as f:
-with open(os.path.join("logs", f"Chronos_Tiny_{context_len}_{pred_len}.csv"), "w") as f:
+with open(os.path.join("logs", f"Chronos_Tiny_ZS_{context_len}_{pred_len}.csv"), "w") as f:
     f.write("context_len,horizon_len,MSE,RMSE,MAE\n")
     for p_len in range(1, pred_len + 1):
         f.write(f"{context_len},{p_len},{mse_by_pred_len[p_len]},{rmse_by_pred_len[p_len]},{mae_by_pred_len[p_len]}")
