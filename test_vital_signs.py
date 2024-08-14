@@ -19,7 +19,6 @@ data_path = "/home/mali2/datasets/vital_signs" # "/home/mali2/datasets/vital_sig
 
 def calculate_smape(y_gt, y_pred):
     return np.mean(200 * np.abs(y_pred - y_gt) / (np.abs(y_pred) + np.abs(y_gt) + 1e-8))
-    # return 100/len(y_gt) * np.sum(2 * np.abs(y_pred - y_gt) / (np.abs(y_gt) + np.abs(y_pred) + 1e-9))
 
 print(f"Data path: {data_path}. Loading vital signs data...")
 

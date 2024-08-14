@@ -34,11 +34,14 @@ model_path = "amazon/chronos-t5-tiny"
 data_path = "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
 
 val_batch_size = 64
-val_batches = 2000
+val_batches = 10 #2000
 
-max_steps = 3000
+max_steps = 10 #4000
 
-num_rounds = 5
+num_rounds = 1
+
+def calculate_smape(y_gt, y_pred):
+    return np.mean(200 * np.abs(y_pred - y_gt) / (np.abs(y_pred) + np.abs(y_gt) + 1e-8))
 
 if not os.path.exists("logs"):
     os.mkdir("logs")
@@ -104,6 +107,7 @@ def test(pipeline: ChronosPipeline, dataset: VitalSignsDataset, indices):
     mses = []
     rmses = []
     maes = []
+    smapes = []
 
     for _, (x, y) in enumerate(batch_loader(indices, dataset, val_batch_size)):
         forecast = pipeline.predict(
@@ -117,12 +121,14 @@ def test(pipeline: ChronosPipeline, dataset: VitalSignsDataset, indices):
         mse = mean_squared_error(y, forecast)
         rmse = np.sqrt(mse)
         mae = mean_absolute_error(y, forecast)
+        smape = calculate_smape(y.numpy(), forecast)
 
         mses.append(mse)
         rmses.append(rmse)
         maes.append(mae)
+        smapes.append(smape)
 
-    return np.average(mses), np.average(rmses), np.average(maes)
+    return np.average(mses), np.average(rmses), np.average(maes), np.average(smapes)
 
 class FlowerClient(NumPyClient):
     def __init__(self, train_data_path: str, valdataset: VitalSignsDataset, cid: int) -> None:
@@ -162,13 +168,13 @@ class FlowerClient(NumPyClient):
 
         set_params(self.pipeline.model, parameters)
         # do local evaluation (call same function as centralised setting)
-        mse, rmse, mae = test(self.pipeline, self.valdataset, self.val_indices)
+        mse, rmse, mae, smape = test(self.pipeline, self.valdataset, self.val_indices)
         
         with open("logs/fed_avg/eval_stats.txt", "a") as f:
-            f.write(f"Client: {self.client_id}; MSE: {mse} | RMSE: {rmse} | MAE: {mae}\n")
+            f.write(f"Client: {self.client_id}; MSE: {mse} | RMSE: {rmse} | MAE: {mae} | SMAPE: {smape}\n")
 
         # send statistics back to the server
-        return float(rmse), len(self.val_indices), {"mae": mae, "mse": mse, "rmse": rmse}
+        return float(rmse), len(self.val_indices), {"mae": mae, "mse": mse, "rmse": rmse, "smape": smape}
     
 
 def client_fn(context: Context):
@@ -186,14 +192,15 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
     maes = [num_examples * m["mae"] for num_examples, m in metrics]
     mses = [num_examples * m["mse"] for num_examples, m in metrics]
     rmses = [num_examples * m["rmse"] for num_examples, m in metrics]
+    smapes = [num_examples * m["smapes"] for num_examples, m in metrics]
 
     examples = [num_examples for num_examples, _ in metrics]
 
     with open("logs/fed_avg/eval_stats.txt", "a") as f:
-        f.write(f"MSE: {sum(mses)/sum(examples)} | RMSE: {sum(rmses)/sum(examples)} | MAE: {sum(maes)/sum(examples)}\n\n")
+        f.write(f"MSE: {sum(mses)/sum(examples)} | RMSE: {sum(rmses)/sum(examples)} | MAE: {sum(maes)/sum(examples)} | SMAPE: {sum(smapes)/sum(examples)} \n\n")
 
     # Aggregate and return custom metric (weighted average)
-    return {"mae": sum(maes) / sum(examples), "mse": sum(mses) / sum(examples)}
+    return {"mae": sum(maes) / sum(examples), "mse": sum(mses) / sum(examples), "smape" : sum(smapes)/sum(examples)}
 
 
 model = load_model(model_id=model_path)
