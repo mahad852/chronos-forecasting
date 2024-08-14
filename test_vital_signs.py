@@ -13,7 +13,7 @@ context_len = 512
 pred_len = 64
 
 batch_size = 64
-batches = 2000
+batches = 30000
 
 data_path = "/home/mali2/datasets/vital_signs" # "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
 
