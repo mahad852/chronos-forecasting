@@ -109,7 +109,7 @@ for i, (x, y) in enumerate(batch_loader(indices, test_dataset, batch_size)):
     for p_len in range(1, pred_len + 1):
         mse_by_pred_len[p_len] += mean_squared_error(y[:, :p_len], forecast[:, :p_len])
         mae_by_pred_len[p_len] += mean_absolute_error(y[:, :p_len], forecast[:, :p_len])
-        smapes_by_pred_len[p_len] += calculate_smape(y[:, :p_len], forecast[:, :p_len])
+        smapes_by_pred_len[p_len] += calculate_smape(y[:, :p_len].numpy(), forecast[:, :p_len])
 
     if i % 20 == 0:
         print(f"iteraition: {i} | MSE: {mse} RMSE: {rmse} MAE: {mae} SMAPE: {smape}")
