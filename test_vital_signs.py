@@ -87,6 +87,8 @@ for i, (x, y) in enumerate(batch_loader(indices, test_dataset, batch_size)):
         num_samples=20,
     )
 
+    print(x.max(dim=-1), x.min(dim=-1), x.mean(dim=-1), x.median(dim=-1))
+
     forecast = np.quantile(forecast.numpy(), 0.5, axis=1)
 
     mse = mean_squared_error(y, forecast)
