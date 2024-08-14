@@ -98,7 +98,7 @@ for i, (x, y) in enumerate(batch_loader(indices, test_dataset, batch_size)):
     mse = mean_squared_error(y, forecast)
     rmse = np.sqrt(mse)
     mae = mean_absolute_error(y, forecast)
-    smape = calculate_smape(y, forecast)
+    smape = calculate_smape(y.numpy(), forecast)
 
     mses.append(mse)
     maes.append(mae)
