@@ -34,11 +34,11 @@ model_path = "amazon/chronos-t5-tiny"
 data_path = "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
 
 val_batch_size = 64
-val_batches = 10 #2000
+val_batches = 2000
 
-max_steps = 10 #4000
+max_steps = 4000
 
-num_rounds = 1
+num_rounds = 5
 
 def calculate_smape(y_gt, y_pred):
     return np.mean(200 * np.abs(y_pred - y_gt) / (np.abs(y_pred) + np.abs(y_gt) + 1e-8))
