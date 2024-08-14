@@ -17,6 +17,9 @@ batches = 30000
 
 data_path = "/home/mali2/datasets/vital_signs" # "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
 
+def calculate_smape(y_gt, y_pred):
+    return 100/len(y_gt) * np.sum(2 * np.abs(y_pred - y_gt) / (np.abs(y_gt) + np.abs(y_pred) + 1e-9))
+
 print(f"Data path: {data_path}. Loading vital signs data...")
 
 
@@ -68,10 +71,12 @@ def batch_loader(indices : List[int], dataset: VitalSignsDataset, batch_size: in
 
 mses = []
 maes = []
+smapes = []
 
 mse_by_pred_len = {}
 rmse_by_pred_len = {}
 mae_by_pred_len = {}
+smapes_by_pred_len = {}
 
 total = 0
 
@@ -79,6 +84,7 @@ for p_len in range(1, pred_len + 1):
     mse_by_pred_len[p_len] = 0.0
     rmse_by_pred_len[p_len] = 0.0
     mae_by_pred_len[p_len] = 0.0
+    smapes_by_pred_len[p_len] = 0.0
 
 for i, (x, y) in enumerate(batch_loader(indices, test_dataset, batch_size)):
     forecast = pipeline.predict(
@@ -87,43 +93,45 @@ for i, (x, y) in enumerate(batch_loader(indices, test_dataset, batch_size)):
         num_samples=20,
     )
 
-    print(x.max(dim=-1), x.min(dim=-1), x.mean(dim=-1), x.median(dim=-1))
-
     forecast = np.quantile(forecast.numpy(), 0.5, axis=1)
 
     mse = mean_squared_error(y, forecast)
     rmse = np.sqrt(mse)
     mae = mean_absolute_error(y, forecast)
+    smape = calculate_smape(y, forecast)
 
     mses.append(mse)
     maes.append(mae)
+    smapes.append(smape)
 
     total += 1
 
     for p_len in range(1, pred_len + 1):
         mse_by_pred_len[p_len] += mean_squared_error(y[:, :p_len], forecast[:, :p_len])
         mae_by_pred_len[p_len] += mean_absolute_error(y[:, :p_len], forecast[:, :p_len])
+        smapes_by_pred_len[p_len] += calculate_smape(y[:, :p_len], forecast[:, :p_len])
 
     if i % 20 == 0:
-        print(f"iteraition: {i} | MSE: {mse} RMSE: {rmse} MAE: {mae}")
+        print(f"iteraition: {i} | MSE: {mse} RMSE: {rmse} MAE: {mae} SMAPE: {smape}")
 
     if i % 200 == 0:
-        print(f"AGG STATS | Iteration: {i} | MSE: {np.average(mses)} RMSE: {np.sqrt(np.average(mses))} MAE: {np.average(maes)}")
+        print(f"AGG STATS | Iteration: {i} | MSE: {np.average(mses)} RMSE: {np.sqrt(np.average(mses))} MAE: {np.average(maes)} SMAPE: {np.average(smapes)}")
 
-print(f"MSE: {np.average(mses)} RMSE: {np.sqrt(np.average(mses))} MAE: {np.average(maes)}")
+print(f"MSE: {np.average(mses)} RMSE: {np.sqrt(np.average(mses))} MAE: {np.average(maes)} SMAPE: {np.average(smapes)}")
 
 for p_len in range(1, pred_len + 1):
     mse_by_pred_len[p_len] /= total
     rmse_by_pred_len[p_len] = np.sqrt(mse_by_pred_len[p_len])
     mae_by_pred_len[p_len] /= total
+    smapes_by_pred_len[p_len] /= total
 
 if not os.path.exists("logs"):
     os.mkdir("logs")
 
 # with open(os.path.join("logs", f"Chronos_Mini_Run8_{context_len}_{pred_len}.csv"), "w") as f:
 with open(os.path.join("logs", f"Chronos_Tiny_ZS_{context_len}_{pred_len}.csv"), "w") as f:
-    f.write("context_len,horizon_len,MSE,RMSE,MAE\n")
+    f.write("context_len,horizon_len,MSE,RMSE,MAE,SMAPE\n")
     for p_len in range(1, pred_len + 1):
-        f.write(f"{context_len},{p_len},{mse_by_pred_len[p_len]},{rmse_by_pred_len[p_len]},{mae_by_pred_len[p_len]}")
+        f.write(f"{context_len},{p_len},{mse_by_pred_len[p_len]},{rmse_by_pred_len[p_len]},{mae_by_pred_len[p_len]},{smapes_by_pred_len[p_len]}")
         if p_len != pred_len:
             f.write("\n")

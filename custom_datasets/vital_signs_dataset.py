@@ -6,7 +6,7 @@ import os
 
 import scipy.io
 
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler
 
 class VitalSignsDataset(Dataset):
     def __init__(self, 
