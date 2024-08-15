@@ -7,7 +7,7 @@ import math
 import scipy.io
 from custom_datasets.vital_signs_dataset import VitalSignsDataset
 from torch.utils.data import DataLoader
-from typing import List
+from typing import List, OrderedDict
 
 context_len = 512
 pred_len = 64
@@ -20,11 +20,21 @@ data_path = "/home/mali2/datasets/vital_signs" # "/home/mali2/datasets/vital_sig
 def calculate_smape(y_gt, y_pred):
     return np.mean(200 * np.abs(y_pred - y_gt) / (np.abs(y_pred) + np.abs(y_gt) + 1e-8))
 
-print(f"Data path: {data_path}. Loading vital signs data...")
+def set_params(model, parameters):
+    """Replace model parameters with those passed as `parameters`."""
 
+    params_dict = zip(model.state_dict().keys(), parameters)
+    state_dict = OrderedDict({k: torch.Tensor(v) for k, v in params_dict})
+    # now replace the parameters
+    model.load_state_dict(state_dict, strict=True)
+
+
+print(f"Data path: {data_path}. Loading vital signs data...")
 
 user_ids = []
 for num in range(1, 31):
+    if num in [15, 24, 26]:
+        continue
     if num < 10:
         user_id = f"GDN000{num}"
     else:
@@ -34,7 +44,7 @@ for num in range(1, 31):
 test_dataset = VitalSignsDataset(
     user_ids=user_ids,
     data_attribute="tfm_ecg2",
-    scenarios=["Resting"],
+    scenarios=["valsalva"],
     data_path=data_path,
     is_train=False,
     context_len=context_len,
@@ -55,6 +65,15 @@ pipeline = ChronosPipeline.from_pretrained(
     torch_dtype=torch.bfloat16,
 )
 
+############################### CODE TO LOAD FED LEARNING WEIGHTS - UNCOMMENT FOR ZEROSHOT ####################################
+###############################################################################################################################
+###############################################################################################################################
+npy_model = np.load("logs/fed_avg/round-5-weights.npz")
+npy_params = [npy_model[file] for file in npy_model.files]
+set_params(npy_params)
+###############################################################################################################################
+###############################################################################################################################
+
 print(f"Chronos {model_path} loaded successfully.")
 
 def batch_loader(indices : List[int], dataset: VitalSignsDataset, batch_size: int):
@@ -67,7 +86,6 @@ def batch_loader(indices : List[int], dataset: VitalSignsDataset, batch_size: in
             batch_x.append(x)
             batch_y.append(y)
         yield torch.tensor(np.array(batch_x)), torch.tensor(np.array(batch_y))
-
 
 mses = []
 maes = []
@@ -129,7 +147,8 @@ if not os.path.exists("logs"):
     os.mkdir("logs")
 
 # with open(os.path.join("logs", f"Chronos_Mini_Run8_{context_len}_{pred_len}.csv"), "w") as f:
-with open(os.path.join("logs", f"Chronos_Tiny_ZS_{context_len}_{pred_len}.csv"), "w") as f:
+# with open(os.path.join("logs", f"Chronos_Tiny_ZS_{context_len}_{pred_len}.csv"), "w") as f:
+with open(os.path.join("logs", f"Chronos_Tiny_FA_Valsalva_{context_len}_{pred_len}.csv"), "w") as f:
     f.write("context_len,horizon_len,MSE,RMSE,MAE,SMAPE\n")
     for p_len in range(1, pred_len + 1):
         f.write(f"{context_len},{p_len},{mse_by_pred_len[p_len]},{rmse_by_pred_len[p_len]},{mae_by_pred_len[p_len]},{smapes_by_pred_len[p_len]}")
