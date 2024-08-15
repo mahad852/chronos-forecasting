@@ -33,8 +33,8 @@ print(f"Data path: {data_path}. Loading vital signs data...")
 
 user_ids = []
 for num in range(1, 31):
-    if num in [1, 2, 3, 15, 24, 26]:
-        continue
+    # if num in [1, 2, 3, 15, 24, 26]:
+    #     continue
     if num < 10:
         user_id = f"GDN000{num}"
     else:
@@ -44,7 +44,7 @@ for num in range(1, 31):
 test_dataset = VitalSignsDataset(
     user_ids=user_ids,
     data_attribute="tfm_ecg2",
-    scenarios=["apnea"],
+    scenarios=["resting"],
     data_path=data_path,
     is_train=False,
     context_len=context_len,
@@ -146,9 +146,9 @@ for p_len in range(1, pred_len + 1):
 if not os.path.exists("logs"):
     os.mkdir("logs")
 
-# with open(os.path.join("logs", f"Chronos_Mini_Run8_{context_len}_{pred_len}.csv"), "w") as f:
 # with open(os.path.join("logs", f"Chronos_Tiny_ZS_{context_len}_{pred_len}.csv"), "w") as f:
-with open(os.path.join("logs", f"Chronos_Tiny_FA_Apnea_{context_len}_{pred_len}.csv"), "w") as f:
+# with open(os.path.join("logs", f"Chronos_Tiny_FA_Apnea_{context_len}_{pred_len}.csv"), "w") as f:
+with open(os.path.join("logs", f"Chronos_Tiny_FA_Resting_{context_len}_{pred_len}.csv"), "w") as f:
     f.write("context_len,horizon_len,MSE,RMSE,MAE,SMAPE\n")
     for p_len in range(1, pred_len + 1):
         f.write(f"{context_len},{p_len},{mse_by_pred_len[p_len]},{rmse_by_pred_len[p_len]},{mae_by_pred_len[p_len]},{smapes_by_pred_len[p_len]}")
