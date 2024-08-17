@@ -791,7 +791,7 @@ def train_vital_signs(
         torch_compile=torch_compile,
         ddp_find_unused_parameters=False,
         remove_unused_columns=False,
-        resume_from_checkpoint=True
+        resume_from_checkpoint=False
     )
 
     # Create Trainer instance
@@ -802,8 +802,7 @@ def train_vital_signs(
     )
     log_on_main("Training", logger)
 
-    resume_from_checkpoint = os.path.exists(os.path.join(output_dir, "run-0", "checkpoint-final"))
-    trainer.train(resume_from_checkpoint=resume_from_checkpoint)
+    trainer.train()
 
     model.save_pretrained(output_dir / "checkpoint-final")
     
