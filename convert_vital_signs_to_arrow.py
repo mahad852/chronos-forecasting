@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
     clients = [
         VitalSignsDataset(
-            user_ids=["GDN0001", "GDN0002", "GDN0003", "GDN0004", "GDN0005", "GDN0006", "GDN0007", "GDN0008", "GDN0009", "GDN0010"],
+            user_ids=["GDN0001", "GDN0002", "GDN0003", "GDN0004", "GDN0005", "GDN0006", "GDN0007", "GDN0008", "GDN0009", "GDN0010", "GDN0011", "GDN0012", "GDN0013", "GDN0014", "GDN0015"],
             data_attribute="tfm_ecg2",
             scenarios=["resting"],
             context_len=context_len, pred_len=pred_len, 
@@ -57,7 +57,7 @@ if __name__ == "__main__":
         ),
 
         VitalSignsDataset(
-            user_ids=["GDN0011", "GDN0012", "GDN0013", "GDN0014", "GDN0015", "GDN0016", "GDN0017", "GDN0018", "GDN0019", "GDN0020"],
+            user_ids=["GDN0016", "GDN0017", "GDN0018", "GDN0019", "GDN0020", "GDN0021", "GDN0022", "GDN0023", "GDN0024", "GDN0025", "GDN0026", "GDN0027", "GDN0028", "GDN0029", "GDN0030"],
             data_attribute="tfm_ecg2",
             scenarios=["resting"],
             context_len=context_len, pred_len=pred_len, 
@@ -66,14 +66,15 @@ if __name__ == "__main__":
         ),
 
         VitalSignsDataset(
-            user_ids=["GDN0021", "GDN0022", "GDN0023", "GDN0024", "GDN0025", "GDN0026", "GDN0027", "GDN0028", "GDN0029", "GDN0030"],
+            user_ids=["GDN0004", "GDN0005", "GDN0006", "GDN0007", "GDN0008", "GDN0009", "GDN0010", 
+                    "GDN0011", "GDN0012", "GDN0013", "GDN0014", "GDN0016", "GDN0017", "GDN0019", "GDN0020",
+                    "GDN0021", "GDN0022", "GDN0023", "GDN0025", "GDN0027", "GDN0028", "GDN0029", "GDN0030"],
             data_attribute="tfm_ecg2",
-            scenarios=["resting"],
+            scenarios=["apnea", "tiltup", "tiltdown", "vansalva"],
             context_len=context_len, pred_len=pred_len, 
             data_path=data_path, 
             is_train=True,
-        ),
-
+        )
     ]
 
     client_ids = ["client01", "client02", "client03"]

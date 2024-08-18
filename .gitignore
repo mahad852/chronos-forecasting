@@ -169,6 +169,5 @@ logs/*
 *.npy
 *.npz
 
-*.slurm
 *.out
 *.err

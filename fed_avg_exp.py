@@ -36,9 +36,11 @@ data_path = "/home/x-mali3/datasets/vital_signs" # "/Users/ma649596/Downloads/vi
 val_batch_size = 64
 val_batches = 2000
 
-max_steps = 4000
+max_steps_for_clients = [4000, 4000, 400]
 
 num_rounds = 5
+
+log_path = "logs/fed_avg_hetro"
 
 def calculate_smape(y_gt, y_pred):
     return np.mean(200 * np.abs(y_pred - y_gt) / (np.abs(y_pred) + np.abs(y_gt) + 1e-8))
@@ -46,12 +48,15 @@ def calculate_smape(y_gt, y_pred):
 if not os.path.exists("logs"):
     os.mkdir("logs")
 
-if not os.path.exists("logs/fed_avg"):
-    os.mkdir("logs/fed_avg")
+if not os.path.exists(log_path):
+    os.mkdir(log_path)
+
+event_file = os.path.join(log_path, "events.txt")
+open(event_file, "w").close()
 
 client_ds = [
     VitalSignsDataset(
-        user_ids=["GDN0001", "GDN0002", "GDN0003", "GDN0004", "GDN0005", "GDN0006", "GDN0007", "GDN0008", "GDN0009", "GDN0010"],
+        user_ids=["GDN0001", "GDN0002", "GDN0003", "GDN0004", "GDN0005", "GDN0006", "GDN0007", "GDN0008", "GDN0009", "GDN0010", "GDN0011", "GDN0012", "GDN0013", "GDN0014", "GDN0015"],
         data_attribute="tfm_ecg2",
         scenarios=["resting"],
         context_len=context_len, pred_len=pred_len, 
@@ -60,7 +65,7 @@ client_ds = [
     ),
 
     VitalSignsDataset(
-        user_ids=["GDN0011", "GDN0012", "GDN0013", "GDN0014", "GDN0015", "GDN0016", "GDN0017", "GDN0018", "GDN0019", "GDN0020"],
+        user_ids=["GDN0016", "GDN0017", "GDN0018", "GDN0019", "GDN0020", "GDN0021", "GDN0022", "GDN0023", "GDN0024", "GDN0025", "GDN0026", "GDN0027", "GDN0028", "GDN0029", "GDN0030"],
         data_attribute="tfm_ecg2",
         scenarios=["resting"],
         context_len=context_len, pred_len=pred_len, 
@@ -69,9 +74,11 @@ client_ds = [
     ),
 
     VitalSignsDataset(
-        user_ids=["GDN0021", "GDN0022", "GDN0023", "GDN0024", "GDN0025", "GDN0026", "GDN0027", "GDN0028", "GDN0029", "GDN0030"],
+        user_ids=["GDN0004", "GDN0005", "GDN0006", "GDN0007", "GDN0008", "GDN0009", "GDN0010", 
+                  "GDN0011", "GDN0012", "GDN0013", "GDN0014", "GDN0016", "GDN0017", "GDN0019", "GDN0020",
+                  "GDN0021", "GDN0022", "GDN0023", "GDN0025", "GDN0027", "GDN0028", "GDN0029", "GDN0030"],
         data_attribute="tfm_ecg2",
-        scenarios=["resting"],
+        scenarios=["apnea", "tiltup", "tiltdown", "vansalva"],
         context_len=context_len, pred_len=pred_len, 
         data_path=data_path, 
         is_train=False,
@@ -130,6 +137,10 @@ def test(pipeline: ChronosPipeline, dataset: VitalSignsDataset, indices):
 
     return np.average(mses), np.average(rmses), np.average(maes), np.average(smapes)
 
+def log_event(event_str: str):
+    with open(event_file, "a") as f:
+        f.write(f"{event_str}\n")
+
 class FlowerClient(NumPyClient):
     def __init__(self, train_data_path: str, valdataset: VitalSignsDataset, cid: int) -> None:
         super().__init__()
@@ -152,26 +163,34 @@ class FlowerClient(NumPyClient):
         """This method trains the model using the parameters sent by the
         server on the dataset of this client. At then end, the parameters
         of the locally trained model are communicated back to the server"""
+        
+        log_event(f"STARTING training for client: {self.client_id}")
 
         # copy parameters sent by the server into client's local model
         set_params(self.model, parameters)
 
         # do local training (call same function as centralised setting)
-        self.model = train_vital_signs(training_data_paths=[self.train_data_path], model=self.model, context_length=context_len, prediction_length=pred_len, max_steps=max_steps)
+        self.model = train_vital_signs(training_data_paths=[self.train_data_path], model=self.model, context_length=context_len, prediction_length=pred_len, max_steps=max_steps_for_clients[self.client_id])
+
+        log_event(f"COMPLETED training for client: {self.client_id}")
 
         # return the model parameters to the server as well as extra info (number of training examples in this case)
-        return get_params(self.model), max_steps, {}
+        return get_params(self.model), max_steps_for_clients[self.client_id], {}
 
     def evaluate(self, parameters: NDArrays, config: Dict[str, Scalar]):
         """Evaluate the model sent by the server on this client's
         local validation set. Then return performance metrics."""
+        
+        log_event(f"STARTING eval for client: {self.client_id}")
 
         set_params(self.pipeline.model, parameters)
         # do local evaluation (call same function as centralised setting)
         mse, rmse, mae, smape = test(self.pipeline, self.valdataset, self.val_indices)
         
-        with open("logs/fed_avg/eval_stats.txt", "a") as f:
+        with open(os.path.join(log_path, "eval_stats.txt"), "a") as f:
             f.write(f"Client: {self.client_id}; MSE: {mse} | RMSE: {rmse} | MAE: {mae} | SMAPE: {smape}\n")
+
+        log_event(f"COMPLETED eval for client: {self.client_id}")
 
         # send statistics back to the server
         return float(rmse), len(self.val_indices), {"mae": mae, "mse": mse, "rmse": rmse, "smape": smape}
@@ -188,6 +207,8 @@ def client_fn(context: Context):
 
 # Define metric aggregation function
 def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
+    log_event("STARTING weighted averaging for evaluation metrics.")
+
     # Multiply accuracy of each client by number of examples used
     maes = [num_examples * m["mae"] for num_examples, m in metrics]
     mses = [num_examples * m["mse"] for num_examples, m in metrics]
@@ -196,8 +217,10 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
 
     examples = [num_examples for num_examples, _ in metrics]
 
-    with open("logs/fed_avg/eval_stats.txt", "a") as f:
+    with open(os.path.join(log_path, "eval_stats.txt"), "a") as f:
         f.write(f"MSE: {sum(mses)/sum(examples)} | RMSE: {sum(rmses)/sum(examples)} | MAE: {sum(maes)/sum(examples)} | SMAPE: {sum(smapes)/sum(examples)} \n\n")
+
+    log_event("COMPLETED weighted averaging for evaluation metrics.")
 
     # Aggregate and return custom metric (weighted average)
     return {"mae": sum(maes) / sum(examples), "mse": sum(mses) / sum(examples), "smape" : sum(smapes)/sum(examples)}
@@ -211,7 +234,9 @@ strategy = CustomFedAvg(
     initial_parameters=global_model_init,  # initialised global model,
     min_fit_clients=len(client_ds),
     min_evaluate_clients=len(client_ds),
-    min_available_clients=len(client_ds)
+    min_available_clients=len(client_ds),
+    log_path=log_path,
+    event_file=event_file
 )
 
 # each client gets 1xCPU (this is the default if no resources are specified)
