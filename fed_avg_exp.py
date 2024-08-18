@@ -170,12 +170,12 @@ class FlowerClient(NumPyClient):
         set_params(self.model, parameters)
 
         # do local training (call same function as centralised setting)
-        self.model = train_vital_signs(training_data_paths=[self.train_data_path], model=self.model, context_length=context_len, prediction_length=pred_len, max_steps=max_steps_for_clients[self.client_id])
+        self.model = train_vital_signs(training_data_paths=[self.train_data_path], model=self.model, context_length=context_len, prediction_length=pred_len, max_steps=max_steps_for_clients[self.client_id - 1])
 
         log_event(f"COMPLETED training for client: {self.client_id}")
 
         # return the model parameters to the server as well as extra info (number of training examples in this case)
-        return get_params(self.model), max_steps_for_clients[self.client_id], {}
+        return get_params(self.model), max_steps_for_clients[self.client_id - 1], {}
 
     def evaluate(self, parameters: NDArrays, config: Dict[str, Scalar]):
         """Evaluate the model sent by the server on this client's
