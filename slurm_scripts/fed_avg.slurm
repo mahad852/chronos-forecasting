@@ -16,7 +16,7 @@
 # Manage processing environment, load compilers, and applications.
 module purge
 module load modtree/gpu
-module load anaconda
+module load anaconda/2021.05-py38
 conda activate chronos
 
 # Launch GPU code
