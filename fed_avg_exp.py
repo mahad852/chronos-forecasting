@@ -78,7 +78,7 @@ client_ds = [
                   "GDN0011", "GDN0012", "GDN0013", "GDN0014", "GDN0016", "GDN0017", "GDN0019", "GDN0020",
                   "GDN0021", "GDN0022", "GDN0023", "GDN0025", "GDN0027", "GDN0028", "GDN0029", "GDN0030"],
         data_attribute="tfm_ecg2",
-        scenarios=["apnea", "tiltup", "tiltdown", "vansalva"],
+        scenarios=["apnea", "tiltup", "tiltdown", "valsalva"],
         context_len=context_len, pred_len=pred_len, 
         data_path=data_path, 
         is_train=False,
