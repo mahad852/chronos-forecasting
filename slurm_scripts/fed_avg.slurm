@@ -20,4 +20,4 @@ module load anaconda
 conda activate chronos
 
 # Launch GPU code
-python -u fed_avg_exp.py
+python fed_avg_exp.py
