@@ -15,7 +15,7 @@ pred_len = 64
 batch_size = 64
 batches = 30000
 
-data_path = "/home/mali2/datasets/vital_signs" # "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
+data_path = "/home/x-mali3/datasets/vital_signs" # "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
 
 def calculate_smape(y_gt, y_pred):
     return np.mean(200 * np.abs(y_pred - y_gt) / (np.abs(y_pred) + np.abs(y_gt) + 1e-8))
@@ -68,7 +68,7 @@ pipeline = ChronosPipeline.from_pretrained(
 ############################### CODE TO LOAD FED LEARNING WEIGHTS - UNCOMMENT FOR ZEROSHOT ####################################
 ###############################################################################################################################
 ###############################################################################################################################
-npy_model = np.load("logs/fed_avg/round-5-weights.npz")
+npy_model = np.load("logs/fed_avg_hetro/round-5-weights.npz")
 npy_params = [npy_model[file] for file in npy_model.files]
 set_params(pipeline.model, npy_params)
 ###############################################################################################################################
@@ -148,7 +148,7 @@ if not os.path.exists("logs"):
 
 # with open(os.path.join("logs", f"Chronos_Tiny_ZS_{context_len}_{pred_len}.csv"), "w") as f:
 # with open(os.path.join("logs", f"Chronos_Tiny_FA_Apnea_{context_len}_{pred_len}.csv"), "w") as f:
-with open(os.path.join("logs", f"Chronos_Tiny_FA_Resting_{context_len}_{pred_len}.csv"), "w") as f:
+with open(os.path.join("logs", f"Chronos_Tiny_FAH_Resting_{context_len}_{pred_len}.csv"), "w") as f:
     f.write("context_len,horizon_len,MSE,RMSE,MAE,SMAPE\n")
     for p_len in range(1, pred_len + 1):
         f.write(f"{context_len},{p_len},{mse_by_pred_len[p_len]},{rmse_by_pred_len[p_len]},{mae_by_pred_len[p_len]},{smapes_by_pred_len[p_len]}")
