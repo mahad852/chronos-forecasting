@@ -20,4 +20,4 @@ module load anaconda/2021.05-py38
 conda activate chronos
 
 # Launch GPU code
-python test_vital_signs.slurm
+python test_vital_signs.py
