@@ -15,7 +15,7 @@ pred_len = 64
 batch_size = 64
 batches = 30000
 
-data_path = "/home/x-mali3/datasets/vital_signs" # "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
+data_path = "/home/mali2/datasets/vital_signs" # "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
 
 def calculate_smape(y_gt, y_pred):
     return np.mean(200 * np.abs(y_pred - y_gt) / (np.abs(y_pred) + np.abs(y_gt) + 1e-8))
@@ -33,8 +33,8 @@ print(f"Data path: {data_path}. Loading vital signs data...")
 
 user_ids = []
 for num in range(1, 31):
-    if num in [15, 18, 24]:
-        continue
+    # if num in [15, 18, 24]:
+    #     continue
     if num < 10:
         user_id = f"GDN000{num}"
     else:
@@ -43,8 +43,8 @@ for num in range(1, 31):
 
 test_dataset = VitalSignsDataset(
     user_ids=user_ids,
-    data_attribute="tfm_ecg2",
-    scenarios=["tiltdown"],
+    data_attribute="tfm_icg",
+    scenarios=["resting"],
     data_path=data_path,
     is_train=False,
     context_len=context_len,
@@ -68,9 +68,11 @@ pipeline = ChronosPipeline.from_pretrained(
 ############################### CODE TO LOAD FED LEARNING WEIGHTS - UNCOMMENT FOR ZEROSHOT ####################################
 ###############################################################################################################################
 ###############################################################################################################################
-npy_model = np.load("logs/fed_avg_hetro/round-5-weights.npz")
-npy_params = [npy_model[file] for file in npy_model.files]
-set_params(pipeline.model, npy_params)
+
+# npy_model = np.load("logs/fed_avg_hetro/round-5-weights.npz")
+# npy_params = [npy_model[file] for file in npy_model.files]
+# set_params(pipeline.model, npy_params)
+
 ###############################################################################################################################
 ###############################################################################################################################
 
@@ -148,7 +150,8 @@ if not os.path.exists("logs"):
 
 # with open(os.path.join("logs", f"Chronos_Tiny_ZS_{context_len}_{pred_len}.csv"), "w") as f:
 # with open(os.path.join("logs", f"Chronos_Tiny_FA_Apnea_{context_len}_{pred_len}.csv"), "w") as f:
-with open(os.path.join("logs", f"Chronos_Tiny_FAH_TiltDown_{context_len}_{pred_len}.csv"), "w") as f:
+# with open(os.path.join("logs", f"Chronos_Tiny_FAH_TiltDown_{context_len}_{pred_len}.csv"), "w") as f:
+with open(os.path.join("logs", f"Chronos_Tiny_ZS_ICG_{context_len}_{pred_len}.csv"), "w") as f:
     f.write("context_len,horizon_len,MSE,RMSE,MAE,SMAPE\n")
     for p_len in range(1, pred_len + 1):
         f.write(f"{context_len},{p_len},{mse_by_pred_len[p_len]},{rmse_by_pred_len[p_len]},{mae_by_pred_len[p_len]},{smapes_by_pred_len[p_len]}")
