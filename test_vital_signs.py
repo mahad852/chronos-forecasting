@@ -33,7 +33,7 @@ print(f"Data path: {data_path}. Loading vital signs data...")
 
 user_ids = []
 for num in range(1, 31):
-    if num in [15, 24, 26]:
+    if num in [15, 18, 24]:
         continue
     if num < 10:
         user_id = f"GDN000{num}"
