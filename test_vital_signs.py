@@ -43,7 +43,7 @@ for num in range(1, 31):
 
 test_dataset = VitalSignsDataset(
     user_ids=user_ids,
-    data_attribute="tfm_ecg2",
+    data_attribute="tfm_icg",
     scenarios=["resting"],
     data_path=data_path,
     is_train=False,
@@ -56,7 +56,8 @@ indices = sorted(np.random.permutation(len(test_dataset))[: (batches * batch_siz
 print("Vital signs data loaded.")
 
 # model_path = "scripts/output/run-15/checkpoint-final/ -> mini on 100000 720_1"
-model_path = "amazon/chronos-t5-tiny"
+# model_path = "amazon/chronos-t5-tiny"
+model_path = "scripts/output/ecg_icg/run-0/checkpoint-final/"
 
 
 pipeline = ChronosPipeline.from_pretrained(
@@ -69,9 +70,9 @@ pipeline = ChronosPipeline.from_pretrained(
 ###############################################################################################################################
 ###############################################################################################################################
 
-npy_model = np.load("logs/fed_avg_hetro2/round-5-weights.npz")
-npy_params = [npy_model[file] for file in npy_model.files]
-set_params(pipeline.model, npy_params)
+# npy_model = np.load("logs/fed_avg_hetro2/round-5-weights.npz")
+# npy_params = [npy_model[file] for file in npy_model.files]
+# set_params(pipeline.model, npy_params)
 
 ###############################################################################################################################
 ###############################################################################################################################
@@ -151,7 +152,9 @@ if not os.path.exists("logs"):
 # with open(os.path.join("logs", f"Chronos_Tiny_ZS_{context_len}_{pred_len}.csv"), "w") as f:
 # with open(os.path.join("logs", f"Chronos_Tiny_FA_Apnea_{context_len}_{pred_len}.csv"), "w") as f:
 # with open(os.path.join("logs", f"Chronos_Tiny_FAH_TiltDown_{context_len}_{pred_len}.csv"), "w") as f:
-with open(os.path.join("logs", f"Chronos_Tiny_FAH2_ECG_{context_len}_{pred_len}.csv"), "w") as f:
+# with open(os.path.join("logs", f"Chronos_Tiny_FAH2_ECG_{context_len}_{pred_len}.csv"), "w") as f:
+# with open(os.path.join("logs", f"Chronos_Tiny_FAH2_ICG_{context_len}_{pred_len}.csv"), "w") as f:
+with open(os.path.join("logs", f"Chronos_Tiny_Cen_ICG_{context_len}_{pred_len}.csv"), "w") as f:
     f.write("context_len,horizon_len,MSE,RMSE,MAE,SMAPE\n")
     for p_len in range(1, pred_len + 1):
         f.write(f"{context_len},{p_len},{mse_by_pred_len[p_len]},{rmse_by_pred_len[p_len]},{mae_by_pred_len[p_len]},{smapes_by_pred_len[p_len]}")
