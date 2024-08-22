@@ -57,7 +57,7 @@ print("Vital signs data loaded.")
 
 # model_path = "scripts/output/run-15/checkpoint-final/ -> mini on 100000 720_1"
 # model_path = "amazon/chronos-t5-tiny"
-model_path = "scripts/output/ecg_icg/run-0/checkpoint-final/"
+model_path = "scripts/output/icg_less/run-0/checkpoint-final/"
 
 
 pipeline = ChronosPipeline.from_pretrained(
@@ -154,7 +154,8 @@ if not os.path.exists("logs"):
 # with open(os.path.join("logs", f"Chronos_Tiny_FAH_TiltDown_{context_len}_{pred_len}.csv"), "w") as f:
 # with open(os.path.join("logs", f"Chronos_Tiny_FAH2_ECG_{context_len}_{pred_len}.csv"), "w") as f:
 # with open(os.path.join("logs", f"Chronos_Tiny_FAH2_ICG_{context_len}_{pred_len}.csv"), "w") as f:
-with open(os.path.join("logs", f"Chronos_Tiny_Cen_ICG_{context_len}_{pred_len}.csv"), "w") as f:
+# with open(os.path.join("logs", f"Chronos_Tiny_Cen_ICG_{context_len}_{pred_len}.csv"), "w") as f:
+with open(os.path.join("logs", f"Chronos_Tiny_CenL_ICG_{context_len}_{pred_len}.csv"), "w") as f:
     f.write("context_len,horizon_len,MSE,RMSE,MAE,SMAPE\n")
     for p_len in range(1, pred_len + 1):
         f.write(f"{context_len},{p_len},{mse_by_pred_len[p_len]},{rmse_by_pred_len[p_len]},{mae_by_pred_len[p_len]},{smapes_by_pred_len[p_len]}")
