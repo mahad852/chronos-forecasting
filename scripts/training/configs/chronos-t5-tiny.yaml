@@ -1,5 +1,5 @@
 training_data_paths:
-- "/home/mali2/chronos-forecasting/vital_signs_arrow/icg.arrow"
+- "/home/mali2/chronos-forecasting/vital_signs_arrow/ecg.arrow"
 probability:
 - 1.0
 context_length: 512
