@@ -57,6 +57,7 @@ print("Vital signs data loaded.")
 
 # model_path = "scripts/output/run-15/checkpoint-final/ -> mini on 100000 720_1"
 # model_path = "amazon/chronos-t5-tiny"
+# model_path = "scripts/output/ecg_icg/run-0/checkpoint-final/"
 model_path = "scripts/output/icg_less/run-0/checkpoint-final/"
 
 
