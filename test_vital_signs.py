@@ -56,7 +56,8 @@ print("Vital signs data loaded.")
 # model_path = "amazon/chronos-t5-tiny"
 # model_path = "scripts/output/ecg/run-0/checkpoint-final/"
 # model_path = "scripts/output/ecg_icg/run-0/checkpoint-final/"
-model_path = "scripts/output/ecg_half/run-0/checkpoint-final/"
+# model_path = "scripts/output/ecg_half/run-0/checkpoint-final/"
+model_path = "scripts/output/ecg_icg_unbalanced_probs/run-0/checkpoint-final/"
 
 pipeline = ChronosPipeline.from_pretrained(
     model_path,
