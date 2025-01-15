@@ -46,7 +46,7 @@ class ScaffoldServer(Server):
         super().__init__(client_manager=client_manager, strategy=strategy)
         self.server_cv: List[torch.Tensor] = []
 
-    def _get_initial_parameters(self, timeout: Optional[float]) -> Parameters:
+    def _get_initial_parameters(self, server_round: int, timeout: Optional[float]) -> Parameters:
         """Get initial parameters from one of the available clients."""
         # Server-side parameter initialization
         parameters: Optional[Parameters] = self.strategy.initialize_parameters(
