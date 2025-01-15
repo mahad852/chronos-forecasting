@@ -2,6 +2,10 @@ from scripts.training.train import load_model
 
 from custom_datasets.vital_signs_dataset import VitalSignsDataset
 
+import numpy as np
+
+np.float_ = np.float64
+
 from flwr.common import ndarrays_to_parameters
 from flwr.server import ServerConfig
 from flwr.simulation import start_simulation
