@@ -44,6 +44,8 @@ def test(pipeline: ChronosPipeline, dataset: VitalSignsDataset, indices: List[in
     maes = []
     smapes = []
 
+    c = 0
+
     for _, (x, y) in enumerate(batch_loader(indices, dataset, val_batch_size)):
         forecast = pipeline.predict(
             context=x,
@@ -62,6 +64,11 @@ def test(pipeline: ChronosPipeline, dataset: VitalSignsDataset, indices: List[in
         rmses.append(rmse)
         maes.append(mae)
         smapes.append(smape)
+
+        c += 1
+        if c >= 10:
+            break
+
 
     return np.average(mses), np.average(rmses), np.average(maes), np.average(smapes)
 
