@@ -102,7 +102,7 @@ class FlowerClient(NumPyClient):
             self.client_cv.append(param.clone().detach().to(device=self.device))
 
         print("***" * 50)
-        print("model_params:", len(self.model.parameters()))
+        print("model_params:", params_len)
         print("*" * 150)
 
         # load client control variate
