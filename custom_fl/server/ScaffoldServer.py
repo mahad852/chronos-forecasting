@@ -75,83 +75,83 @@ class ScaffoldServer(Server):
         return get_parameters_res.parameters
 
     # pylint: disable=too-many-locals
-    # def fit_round(
-    #     self,
-    #     server_round: int,
-    #     timeout: Optional[float],
-    # ) -> Optional[
-    #     Tuple[Optional[Parameters], Dict[str, Scalar], FitResultsAndFailures]
-    # ]:
-    #     """Perform a single round of federated averaging."""
-    #     # Get clients and their respective instructions from strateg
-    #     client_instructions = self.strategy.configure_fit(
-    #         server_round=server_round,
-    #         parameters=update_parameters_with_cv(self.parameters, self.server_cv),
-    #         client_manager=self._client_manager,
-    #     )
+    def fit_round(
+        self,
+        server_round: int,
+        timeout: Optional[float],
+    ) -> Optional[
+        Tuple[Optional[Parameters], Dict[str, Scalar], FitResultsAndFailures]
+    ]:
+        """Perform a single round of federated averaging."""
+        # Get clients and their respective instructions from strateg
+        client_instructions = self.strategy.configure_fit(
+            server_round=server_round,
+            parameters=self.parameters,
+            client_manager=self._client_manager,
+        )
 
-    #     if not client_instructions:
-    #         log(INFO, "fit_round %s: no clients selected, cancel", server_round)
-    #         return None
-    #     log(
-    #         DEBUG,
-    #         "fit_round %s: strategy sampled %s clients (out of %s)",
-    #         server_round,
-    #         len(client_instructions),
-    #         self._client_manager.num_available(),
-    #     )
+        if not client_instructions:
+            log(INFO, "fit_round %s: no clients selected, cancel", server_round)
+            return None
+        log(
+            DEBUG,
+            "fit_round %s: strategy sampled %s clients (out of %s)",
+            server_round,
+            len(client_instructions),
+            self._client_manager.num_available(),
+        )
 
-    #     # Collect `fit` results from all clients participating in this round
-    #     results, failures = fit_clients(
-    #         client_instructions=client_instructions,
-    #         max_workers=self.max_workers,
-    #         timeout=timeout,
-    #     )
-    #     log(
-    #         DEBUG,
-    #         "fit_round %s received %s results and %s failures",
-    #         server_round,
-    #         len(results),
-    #         len(failures),
-    #     )
+        # Collect `fit` results from all clients participating in this round
+        results, failures = fit_clients(
+            client_instructions=client_instructions,
+            max_workers=self.max_workers,
+            timeout=timeout,
+        )
+        log(
+            DEBUG,
+            "fit_round %s received %s results and %s failures",
+            server_round,
+            len(results),
+            len(failures),
+        )
 
-    #     # Aggregate training results
-    #     aggregated_result: Tuple[Optional[Parameters], Dict[str, Scalar]] = (
-    #         self.strategy.aggregate_fit(server_round, results, failures)
-    #     )
+        # Aggregate training results
+        aggregated_result: Tuple[Optional[Parameters], Dict[str, Scalar]] = (
+            self.strategy.aggregate_fit(server_round, results, failures)
+        )
 
-    #     aggregated_result_arrays_combined = []
-    #     if aggregated_result[0] is not None:
-    #         aggregated_result_arrays_combined = parameters_to_ndarrays(
-    #             aggregated_result[0]
-    #         )
-    #     aggregated_parameters = aggregated_result_arrays_combined[
-    #         : len(aggregated_result_arrays_combined) // 2
-    #     ]
-    #     aggregated_cv_update = aggregated_result_arrays_combined[
-    #         len(aggregated_result_arrays_combined) // 2 :
-    #     ]
+        aggregated_result_arrays_combined = []
+        if aggregated_result[0] is not None:
+            aggregated_result_arrays_combined = parameters_to_ndarrays(
+                aggregated_result[0]
+            )
+        aggregated_parameters = aggregated_result_arrays_combined[
+            : len(aggregated_result_arrays_combined) // 2
+        ]
+        aggregated_cv_update = aggregated_result_arrays_combined[
+            len(aggregated_result_arrays_combined) // 2 :
+        ]
 
-    #     # convert server cv into ndarrays
-    #     server_cv_np = [cv.numpy() for cv in self.server_cv]
-    #     # update server cv
-    #     total_clients = len(self._client_manager.all())
-    #     cv_multiplier = len(results) / total_clients
-    #     self.server_cv = [
-    #         torch.from_numpy(cv + cv_multiplier * aggregated_cv_update[i])
-    #         for i, cv in enumerate(server_cv_np)
-    #     ]
+        # convert server cv into ndarrays
+        server_cv_np = [cv.numpy() for cv in self.server_cv]
+        # update server cv
+        total_clients = len(self._client_manager.all())
+        cv_multiplier = len(results) / total_clients
+        self.server_cv = [
+            torch.from_numpy(cv + cv_multiplier * aggregated_cv_update[i])
+            for i, cv in enumerate(server_cv_np)
+        ]
 
-    #     # update parameters x = x + 1* aggregated_update
-    #     curr_params = parameters_to_ndarrays(self.parameters)
-    #     updated_params = [
-    #         x + aggregated_parameters[i] for i, x in enumerate(curr_params)
-    #     ]
-    #     parameters_updated = ndarrays_to_parameters(updated_params)
+        # update parameters x = x + 1* aggregated_update
+        curr_params = parameters_to_ndarrays(self.parameters)
+        updated_params = [
+            x + aggregated_parameters[i] for i, x in enumerate(curr_params)
+        ]
+        parameters_updated = ndarrays_to_parameters(updated_params)
 
-    #     # metrics
-    #     metrics_aggregated = aggregated_result[1]
-    #     return parameters_updated, metrics_aggregated, (results, failures)
+        # metrics
+        metrics_aggregated = aggregated_result[1]
+        return parameters_updated, metrics_aggregated, (results, failures)
 
 
 def update_parameters_with_cv(
