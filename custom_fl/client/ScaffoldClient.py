@@ -169,7 +169,7 @@ class FlowerClient(NumPyClient):
 
 def get_ignore_indices(model: torch.nn.Module) -> List[int]:
     indices = []
-    for i, name in model.state_dict().keys():
+    for i, (name, _) in enumerate(model.state_dict().items()):
         if name in ["encoder.embed_tokens.weight", "decoder.embed_tokens.weight", "lm_head.weight"]:
             indices.append(i)
     return indices
