@@ -48,6 +48,8 @@ class ScaffoldServer(Server):
 
     def _get_initial_parameters(self, server_round: int, timeout: Optional[float]) -> Parameters:
         """Get initial parameters from one of the available clients."""
+        super()._get_initial_parameters(server_round=server_round, timeout=timeout)
+        return
         # Server-side parameter initialization
         parameters: Optional[Parameters] = self.strategy.initialize_parameters(
             client_manager=self._client_manager
