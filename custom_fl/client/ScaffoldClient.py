@@ -124,10 +124,10 @@ class FlowerClient(NumPyClient):
         # update client control variate c_i_1 = c_i - c + 1/eta*K (x - y_i)
         for c_i_j, c_j, x_j, y_i_j in zip(self.client_cv, server_cv, x, y_i):
             c_i_n.append(
-                c_i_j
-                - c_j
+                c_i_j.detach().cpu()
+                - c_j.detach().cpu()
                 + (1.0 / (self.learning_rate * self.max_steps))
-                * (x_j - y_i_j)
+                * (x_j - y_i_j.detach().cpu())
             )
             # y_i - x, c_i_n - c_i for the server
             server_update_x.append((y_i_j - x_j))
