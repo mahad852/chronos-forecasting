@@ -103,11 +103,13 @@ class FlowerClient(NumPyClient):
         self.client_cv = []
         for param in self.model.parameters():
             params_len += 1
-            self.client_cv.append(param.clone().detach().to(device=self.device))
+            self.client_cv.append(param.clone().detach())
 
         # load client control variate
         if os.path.exists(f"{self.dir}/client_cv_{self.client_id}.pt"):
-            self.client_cv = torch.load(f"{self.dir}/client_cv_{self.client_id}.pt").to(device=device)
+            self.client_cv = torch.load(f"{self.dir}/client_cv_{self.client_id}.pt")
+
+        self.client_cv = [c_cv.to(device=self.device) for c_cv in self.client_cv]
 
         # convert the server control variate to a list of tensors
         server_cv = [torch.Tensor(cv).to(device=self.device) for cv in server_cv]
