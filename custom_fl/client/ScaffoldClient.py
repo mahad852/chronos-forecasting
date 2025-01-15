@@ -57,7 +57,7 @@ class FlowerClient(NumPyClient):
             torch_dtype=torch.bfloat16,
         )
 
-        self.model = load_model(model_id=model_path)
+        self.model: torch.nn.Module = load_model(model_id=model_path)
 
         self.client_id = cid
         self.cid = cid
@@ -89,8 +89,10 @@ class FlowerClient(NumPyClient):
     def fit(self, parameters, config: Dict[str, Scalar]):
         """Implement distributed fit function for a given client for SCAFFOLD."""
         # the first half are model parameters and the second are the server_cv
-        server_cv = parameters[len(parameters) // 2 :]
-        parameters = parameters[: len(parameters) // 2]
+        
+        original_params_len = len(self.model.state_dict().items())
+        server_cv = parameters[original_params_len :]
+        parameters = parameters[: original_params_len]
         set_params(self.model, parameters)
 
         parameters = omit_non_weights_from_state_dict(self.model, parameters)
