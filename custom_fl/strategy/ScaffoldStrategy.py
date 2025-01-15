@@ -14,7 +14,7 @@ from flwr.common import (
     MetricsAggregationFn
 )
 from flwr.common.logger import log
-from flwr.common.typing import Dict, List, Optional, Tuple, Union, Callable
+from typing import Dict, List, Optional, Tuple, Union, Callable
 from flwr.server.client_proxy import ClientProxy
 from flwr.server.strategy import FedAvg
 from flwr.server.strategy.aggregate import aggregate

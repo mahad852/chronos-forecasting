@@ -2,7 +2,7 @@
 
 import concurrent.futures
 from logging import DEBUG, INFO
-from typing import OrderedDict
+from typing import OrderedDict, Callable, Dict, Tuple, Union, List, Optional
 
 import torch
 from flwr.common import (
@@ -16,14 +16,8 @@ from flwr.common import (
 )
 from flwr.common.logger import log
 from flwr.common.typing import (
-    Callable,
-    Dict,
     GetParametersIns,
-    List,
     NDArrays,
-    Optional,
-    Tuple,
-    Union,
 )
 from flwr.server import Server
 from flwr.server.client_manager import ClientManager, SimpleClientManager
