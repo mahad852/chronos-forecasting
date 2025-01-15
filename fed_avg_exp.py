@@ -43,7 +43,7 @@ data_path = args.data_path #"/home/mali2/datasets/vital_signs" # "/Users/ma64959
 val_batch_size = 64
 val_batches = 2000
 
-max_steps_for_clients = [4000, 4000, 400]
+max_steps_for_clients = [10, 10, 10]
 
 num_rounds = 5
 
