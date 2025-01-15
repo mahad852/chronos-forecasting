@@ -55,13 +55,14 @@ class FlowerClient(NumPyClient):
 
         self.max_steps = max_steps
         self.log_path = log_path
+        self.events_path = os.path.join(self.log_path, "events.txt")
 
     def fit(self, parameters, config):
         """This method trains the model using the parameters sent by the
         server on the dataset of this client. At then end, the parameters
         of the locally trained model are communicated back to the server"""
         
-        log_event(f"STARTING training for client: {self.client_id}")
+        log_event(self.events_path, f"STARTING training for client: {self.client_id}")
 
         # copy parameters sent by the server into client's local model
         set_params(self.model, parameters)
@@ -69,7 +70,7 @@ class FlowerClient(NumPyClient):
         # do local training (call same function as centralised setting)
         self.model = train_vital_signs(training_data_paths=[self.train_data_path], model=self.model, context_length=self.context_len, prediction_length=self.pred_len, max_steps=self.max_steps)
 
-        log_event(f"COMPLETED training for client: {self.client_id}")
+        log_event(self.events_path, f"COMPLETED training for client: {self.client_id}")
 
         # return the model parameters to the server as well as extra info (number of training examples in this case)
         return get_params(self.model), self.max_steps, {}
@@ -78,7 +79,7 @@ class FlowerClient(NumPyClient):
         """Evaluate the model sent by the server on this client's
         local validation set. Then return performance metrics."""
         
-        log_event(f"STARTING eval for client: {self.client_id}")
+        log_event(self.events_path, f"STARTING eval for client: {self.client_id}")
 
         set_params(self.pipeline.model, parameters)
         # do local evaluation (call same function as centralised setting)
@@ -87,7 +88,7 @@ class FlowerClient(NumPyClient):
         with open(os.path.join(self.log_path, "eval_stats.txt"), "a") as f:
             f.write(f"Client: {self.client_id}; MSE: {mse} | RMSE: {rmse} | MAE: {mae} | SMAPE: {smape}\n")
 
-        log_event(f"COMPLETED eval for client: {self.client_id}")
+        log_event(self.events_path, f"COMPLETED eval for client: {self.client_id}")
 
         # send statistics back to the server
         return float(rmse), len(self.val_indices), {"mae": mae, "mse": mse, "rmse": rmse, "smape": smape}

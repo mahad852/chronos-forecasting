@@ -65,6 +65,7 @@ class FlowerClient(NumPyClient):
 
         self.max_steps = max_steps
         self.log_path = log_path
+        self.events_path = os.path.join(self.log_path, "events.txt")
 
         # initialize client control variate with 0 and shape of the network parameters
         self.client_cv = []
@@ -83,6 +84,8 @@ class FlowerClient(NumPyClient):
         server_cv = parameters[len(parameters) // 2 :]
         parameters = parameters[: len(parameters) // 2]
         set_params(self.model, parameters)
+
+        log_event(self.events_path, f"STARTING training for client: {self.client_id}")
 
         self.client_cv = []
         for param in self.model.parameters():
@@ -119,6 +122,8 @@ class FlowerClient(NumPyClient):
 
         combined_updates = server_update_x + server_update_c
 
+        log_event(self.events_path, f"COMPLETED training for client: {self.client_id}")
+
         return (
             combined_updates,
             self.max_steps,
@@ -127,7 +132,7 @@ class FlowerClient(NumPyClient):
 
     def evaluate(self, parameters, config: Dict[str, Scalar]):
         """Evaluate using given parameters."""
-        log_event(f"STARTING eval for client: {self.client_id}")
+        log_event(self.events_path, f"STARTING eval for client: {self.client_id}")
 
         set_params(self.pipeline.model, parameters)
         # do local evaluation (call same function as centralised setting)
@@ -136,7 +141,7 @@ class FlowerClient(NumPyClient):
         with open(os.path.join(self.log_path, "eval_stats.txt"), "a") as f:
             f.write(f"Client: {self.client_id}; MSE: {mse} | RMSE: {rmse} | MAE: {mae} | SMAPE: {smape}\n")
 
-        log_event(f"COMPLETED eval for client: {self.client_id}")
+        log_event(self.events_path, f"COMPLETED eval for client: {self.client_id}")
 
         # send statistics back to the server
         return float(rmse), len(self.val_indices), {"mae": mae, "mse": mse, "rmse": rmse, "smape": smape}

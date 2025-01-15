@@ -68,7 +68,7 @@ def test(pipeline: ChronosPipeline, dataset: VitalSignsDataset, indices: List[in
 def gen_weighted_avergage_fn(log_path: str) -> Callable:
     # Define metric aggregation function
     def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Metrics:
-        log_event("STARTING weighted averaging for evaluation metrics.")
+        log_event(os.path.join(log_path, "events.txt"), "STARTING weighted averaging for evaluation metrics.")
 
         # Multiply accuracy of each client by number of examples used
         maes = [num_examples * m["mae"] for num_examples, m in metrics]
@@ -81,7 +81,7 @@ def gen_weighted_avergage_fn(log_path: str) -> Callable:
         with open(os.path.join(log_path, "eval_stats.txt"), "a") as f:
             f.write(f"MSE: {sum(mses)/sum(examples)} | RMSE: {sum(rmses)/sum(examples)} | MAE: {sum(maes)/sum(examples)} | SMAPE: {sum(smapes)/sum(examples)} \n\n")
 
-        log_event("COMPLETED weighted averaging for evaluation metrics.")
+        log_event(os.path.join(log_path, "events.txt"), "COMPLETED weighted averaging for evaluation metrics.")
 
         # Aggregate and return custom metric (weighted average)
         return {"mae": sum(maes) / sum(examples), "mse": sum(mses) / sum(examples), "smape" : sum(smapes)/sum(examples)}
