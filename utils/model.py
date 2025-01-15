@@ -88,6 +88,29 @@ def gen_weighted_avergage_fn(log_path: str) -> Callable:
     
     return weighted_average
 
+def omit_non_weights_from_state_dict(model: torch.nn.Module, state_dict_params) -> List:
+    ignore_indices = []
+    weight_names = [name for (name, _) in model.named_parameters()]
+
+    for i, (k, _) in enumerate(model.state_dict().items()):
+        if k not in weight_names:
+            ignore_indices.append(i)
+
+    return [param for i, param in enumerate(state_dict_params) if i not in ignore_indices]
+
+def restore_state_dict(model: torch.nn.Module, params) -> List:
+    weight_names = [name for (name, _) in model.named_parameters()]
+    weight_name_to_param_index = {n:i for i, n in enumerate(weight_names)}
+
+    restored = []
+    
+    for (k, v) in model.state_dict().items():
+        if k in weight_name_to_param_index:
+            restored.append(params[weight_name_to_param_index[k]])
+        else:
+            restored.append(v)
+    
+    return restored
 
 class ScaffoldOptimizer(SGD):
     """Implements SGD optimizer step function as defined in the SCAFFOLD paper."""

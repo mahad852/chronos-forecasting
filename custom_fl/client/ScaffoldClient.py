@@ -13,7 +13,7 @@ from flwr.common import Context
 
 from typing import List, Dict
 
-from utils.model import test, get_params, set_params, ScaffoldOptimizer
+from utils.model import test, get_params, set_params, ScaffoldOptimizer, omit_non_weights_from_state_dict
 from utils.general import log_event
 import os
 
@@ -58,8 +58,6 @@ class FlowerClient(NumPyClient):
         )
 
         self.model = load_model(model_id=model_path)
-        
-        self.ignore_indices = get_ignore_indices(self.model)
 
         self.client_id = cid
         self.cid = cid
@@ -95,7 +93,7 @@ class FlowerClient(NumPyClient):
         parameters = parameters[: len(parameters) // 2]
         set_params(self.model, parameters)
 
-        server_cv = [s_cv for i, s_cv in enumerate(server_cv) if i not in self.ignore_indices]
+        parameters = omit_non_weights_from_state_dict(self.model, parameters)
 
         log_event(self.events_path, f"STARTING training for client: {self.client_id}")
 
@@ -116,8 +114,8 @@ class FlowerClient(NumPyClient):
 
         self.model = train_vital_signs(training_data_paths=[self.train_data_path], model=self.model, context_length=self.context_len, prediction_length=self.pred_len, max_steps=self.max_steps, optimizer=(optimizer, None), learning_rate=self.learning_rate)
         
-        x = [param for i, param in enumerate(parameters) if i not in self.ignore_indices]
-        y_i = [param for i, param in enumerate(get_params(self.model)) if i not in self.ignore_indices]
+        x = parameters
+        y_i = [param for param in self.model.parameters()]
         c_i_n = []
         server_update_x = []
         server_update_c = []
@@ -161,14 +159,6 @@ class FlowerClient(NumPyClient):
         # send statistics back to the server
         return float(rmse), len(self.val_indices), {"mae": mae, "mse": mse, "rmse": rmse, "smape": smape}
 
-
-
-def get_ignore_indices(model: torch.nn.Module) -> List[int]:
-    indices = []
-    for i, (name, _) in enumerate(model.state_dict().items()):
-        if name in ["encoder.embed_tokens.weight", "decoder.embed_tokens.weight", "lm_head.weight"]:
-            indices.append(i)
-    return indices
 
 def get_scaffold_client_fn(
     client_ds, 

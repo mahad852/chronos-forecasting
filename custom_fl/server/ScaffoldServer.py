@@ -32,6 +32,7 @@ FitResultsAndFailures = Tuple[
     List[Union[Tuple[ClientProxy, FitRes], BaseException]],
 ]
 
+from utils.model import omit_non_weights_from_state_dict, restore_state_dict
 
 class ScaffoldServer(Server):
     """Implement server for SCAFFOLD."""
@@ -40,11 +41,19 @@ class ScaffoldServer(Server):
         self,
         strategy: Strategy,
         client_manager: Optional[ClientManager] = None,
+        model: Optional[torch.nn.Module] = None,
+        model_name: Optional[str] = None
     ):
         if client_manager is None:
             client_manager = SimpleClientManager()
         super().__init__(client_manager=client_manager, strategy=strategy)
         self.server_cv: List[torch.Tensor] = []
+
+        self.sample_model = model
+        self.model_name = model_name
+
+    def is_chronos_model(self):
+        return self.model_name and "chronos" in self.model_name.lower()
 
     def _get_initial_parameters(self, server_round: int, timeout: Optional[float]) -> Parameters:
         """Get initial parameters from one of the available clients."""
@@ -59,6 +68,9 @@ class ScaffoldServer(Server):
                 torch.from_numpy(t)
                 for t in parameters_to_ndarrays(parameters)
             ]
+            
+            if self.is_chronos_model():
+                self.server_cv = omit_non_weights_from_state_dict(self.sample_model, self.server_cv)
 
             return parameters
 
@@ -145,10 +157,16 @@ class ScaffoldServer(Server):
 
         # update parameters x = x + 1* aggregated_update
         curr_params = parameters_to_ndarrays(self.parameters)
+        if self.is_chronos_model():
+            curr_params = omit_non_weights_from_state_dict(self.sample_model, curr_params)
+
         updated_params = [
             x + aggregated_parameters[i] for i, x in enumerate(curr_params)
         ]
         parameters_updated = ndarrays_to_parameters(updated_params)
+        
+        if self.is_chronos_model():
+            parameters_updated = restore_state_dict(self.sample_model, parameters_updated)
 
         # metrics
         metrics_aggregated = aggregated_result[1]
