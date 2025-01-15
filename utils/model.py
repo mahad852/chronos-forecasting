@@ -100,9 +100,6 @@ class ScaffoldOptimizer(SGD):
         self.server_cv = server_cv
         self.client_cv = client_cv
 
-        print("***" * 50)
-        print(f"Server_cv len: {len(server_cv)}; client_cv len: {len(client_cv)}")
-
     def step(self, closure=None):
         """Implement the custom step function fo SCAFFOLD."""
         # y_i = y_i - \eta * (g_i + c - c_i)  -->
@@ -110,6 +107,5 @@ class ScaffoldOptimizer(SGD):
         super().step(closure=closure)
         
         for group in self.param_groups:
-            print("params len:", len(group["params"]))
             for par, s_cv, c_cv in zip(group["params"], self.server_cv, self.client_cv):
                 par.data.add_(s_cv - c_cv, alpha=-group["lr"])

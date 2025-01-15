@@ -105,10 +105,6 @@ class FlowerClient(NumPyClient):
             params_len += 1
             self.client_cv.append(param.clone().detach().to(device=self.device))
 
-        print("***" * 50)
-        print("model_params:", params_len)
-        print("*" * 150)
-
         # load client control variate
         if os.path.exists(f"{self.dir}/client_cv_{self.client_id}.pt"):
             self.client_cv = torch.load(f"{self.dir}/client_cv_{self.client_id}.pt")
