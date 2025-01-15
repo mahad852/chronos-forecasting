@@ -675,6 +675,7 @@ def train_vital_signs(
     top_k: int = 50,
     top_p: float = 1.0,
     seed: Optional[int] = None,
+    optimizer=None
 ):
 
     if tf32 and not (
@@ -799,6 +800,7 @@ def train_vital_signs(
         model=model,
         args=training_args,
         train_dataset=shuffled_train_dataset,
+        optimizer=optimizer
     )
     log_on_main("Training", logger)
 
