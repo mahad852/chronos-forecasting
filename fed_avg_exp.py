@@ -17,6 +17,8 @@ from custom_fl.client.FedAvgClient import get_fedavg_client_fn
 from custom_fl.client.ScaffoldClient import get_scaffold_client_fn
 
 from custom_fl.server.ScaffoldServer import ScaffoldServer
+from flwr.server import Server
+from flwr.server.client_manager import SimpleClientManager
 
 from utils.model import gen_weighted_avergage_fn, get_params
 
@@ -122,7 +124,8 @@ strategy = strategy_class(
 )
 
 if args.strategy == "scaffold":
-    server = ScaffoldServer(strategy=strategy)
+    # server = ScaffoldServer(strategy=strategy)
+    server = Server(SimpleClientManager(), strategy=strategy)
 
 # each client gets 1xCPU (this is the default if no resources are specified)
 my_client_resources = {'num_cpus': 1, 'num_gpus': 2/len(client_ds)}
