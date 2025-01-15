@@ -46,52 +46,33 @@ class ScaffoldServer(Server):
         super().__init__(client_manager=client_manager, strategy=strategy)
         self.server_cv: List[torch.Tensor] = []
 
-    # def _get_initial_parameters(self, server_round: int, timeout: Optional[float]) -> Parameters:
-    #     """Get initial parameters from one of the available clients."""
-    #     # Server-side parameter initialization
-    #     parameters: Optional[Parameters] = self.strategy.initialize_parameters(
-    #         client_manager=self._client_manager
-    #     )
-    #     if parameters is not None:
-    #         log(INFO, "Using initial parameters provided by strategy")
-    #         return parameters
-
-    #     # Get initial parameters from one of the clients
-    #     log(INFO, "Requesting initial parameters from one random client")
-    #     random_client = self._client_manager.sample(1)[0]
-    #     ins = GetParametersIns(config={})
-    #     get_parameters_res = random_client.get_parameters(ins=ins, timeout=timeout)
-    #     log(INFO, "Received initial parameters from one random client")
-    #     self.server_cv = [
-    #         torch.from_numpy(t)
-    #         for t in parameters_to_ndarrays(get_parameters_res.parameters)
-    #     ]
-    #     return get_parameters_res.parameters
-
-    def _get_initial_parameters(
-        self, server_round: int, timeout: Optional[float]
-    ) -> Parameters:
+    def _get_initial_parameters(self, server_round: int, timeout: Optional[float]) -> Parameters:
         """Get initial parameters from one of the available clients."""
         # Server-side parameter initialization
         parameters: Optional[Parameters] = self.strategy.initialize_parameters(
             client_manager=self._client_manager
         )
         if parameters is not None:
-            log(INFO, "Using initial global parameters provided by strategy")
+            log(INFO, "Using initial parameters provided by strategy")
+
+            self.server_cv = [
+                torch.from_numpy(t)
+                for t in parameters_to_ndarrays(parameters)
+            ]
+
             return parameters
 
         # Get initial parameters from one of the clients
         log(INFO, "Requesting initial parameters from one random client")
         random_client = self._client_manager.sample(1)[0]
         ins = GetParametersIns(config={})
-        get_parameters_res = random_client.get_parameters(
-            ins=ins, timeout=timeout, group_id=server_round
-        )
-        if get_parameters_res.status.code == Code.OK:
-            log(INFO, "Received initial parameters from one random client")
-
+        get_parameters_res = random_client.get_parameters(ins=ins, timeout=timeout)
+        log(INFO, "Received initial parameters from one random client")
+        self.server_cv = [
+            torch.from_numpy(t)
+            for t in parameters_to_ndarrays(get_parameters_res.parameters)
+        ]
         return get_parameters_res.parameters
-
 
     # pylint: disable=too-many-locals
     def fit_round(
