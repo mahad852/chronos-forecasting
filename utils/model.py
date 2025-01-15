@@ -107,5 +107,6 @@ class ScaffoldOptimizer(SGD):
         super().step(closure=closure)
         
         for group in self.param_groups:
+            print("params len:", len(group["params"]))
             for par, s_cv, c_cv in zip(group["params"], self.server_cv, self.client_cv):
                 par.data.add_(s_cv - c_cv, alpha=-group["lr"])
