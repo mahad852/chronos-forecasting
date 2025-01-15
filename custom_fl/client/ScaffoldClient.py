@@ -95,6 +95,10 @@ class FlowerClient(NumPyClient):
 
         log_event(self.events_path, f"STARTING training for client: {self.client_id}")
 
+        print("***" * 50)
+        print("model_params:", len(self.model.parameters()))
+        print("*" * 150)
+        
         self.client_cv = []
         for param in self.model.parameters():
             self.client_cv.append(param.clone().detach().to(device=self.device))
