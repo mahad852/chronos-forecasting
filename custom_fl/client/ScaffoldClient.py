@@ -40,6 +40,11 @@ class FlowerClient(NumPyClient):
         weight_decay: float,
         save_dir: str = "",
     ) -> None:
+        
+        print(" ======= CLIENT CALLED ====")
+        print()
+        print()
+        print("*" * 1000)
 
         self.learning_rate = learning_rate
         self.momentum = momentum
@@ -60,6 +65,8 @@ class FlowerClient(NumPyClient):
         self.model = load_model(model_id=model_path)
 
         self.client_id = cid
+        self.cid = cid
+
         self.context_len = context_len
         self.pred_len = pred_len
 
@@ -77,6 +84,10 @@ class FlowerClient(NumPyClient):
         self.dir = save_dir
         if not os.path.exists(self.dir):
             os.makedirs(self.dir)
+
+    def get_parameters(self, config: Dict[str, Scalar]):
+        """Return the current local model parameters."""
+        return get_params(self.model)
 
     def fit(self, parameters, config: Dict[str, Scalar]):
         """Implement distributed fit function for a given client for SCAFFOLD."""
