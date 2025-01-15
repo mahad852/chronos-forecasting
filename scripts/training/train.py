@@ -675,7 +675,7 @@ def train_vital_signs(
     top_k: int = 50,
     top_p: float = 1.0,
     seed: Optional[int] = None,
-    optimizer=None
+    optimizer=(None, None)
 ):
 
     if tf32 and not (
