@@ -41,11 +41,6 @@ class FlowerClient(NumPyClient):
         save_dir: str = "",
     ) -> None:
         
-        print(" ======= CLIENT CALLED ====")
-        print()
-        print()
-        print("*" * 1000)
-
         self.learning_rate = learning_rate
         self.momentum = momentum
         self.weight_decay = weight_decay
@@ -173,11 +168,6 @@ def get_scaffold_client_fn(
 
     def client_fn(context: Context):
         """Returns a FlowerClient containing its data partition."""
-
-        print(" ======= CLIENT CALLED ====")
-        print()
-        print()
-        print("*" * 1000)
 
         partition_id = int(context.node_config["partition-id"])
 

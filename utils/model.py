@@ -99,11 +99,11 @@ class ScaffoldOptimizer(SGD):
         self.server_cv = server_cv
         self.client_cv = client_cv
 
-    def step(self):
+    def step(self, closure=None):
         """Implement the custom step function fo SCAFFOLD."""
         # y_i = y_i - \eta * (g_i + c - c_i)  -->
         # y_i = y_i - \eta*(g_i + \mu*b_{t}) - \eta*(c - c_i)
-        super().step()
+        super().step(closure=closure)
         
         for group in self.param_groups:
             for par, s_cv, c_cv in zip(group["params"], self.server_cv, self.client_cv):
