@@ -95,13 +95,16 @@ class FlowerClient(NumPyClient):
 
         log_event(self.events_path, f"STARTING training for client: {self.client_id}")
 
+        params_len = 0
+        self.client_cv = []
+        for param in self.model.parameters():
+            params_len += 1
+            self.client_cv.append(param.clone().detach().to(device=self.device))
+
         print("***" * 50)
         print("model_params:", len(self.model.parameters()))
         print("*" * 150)
-        
-        self.client_cv = []
-        for param in self.model.parameters():
-            self.client_cv.append(param.clone().detach().to(device=self.device))
+
         # load client control variate
         if os.path.exists(f"{self.dir}/client_cv_{self.client_id}.pt"):
             self.client_cv = torch.load(f"{self.dir}/client_cv_{self.client_id}.pt")
