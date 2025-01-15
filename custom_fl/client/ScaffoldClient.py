@@ -116,8 +116,8 @@ class FlowerClient(NumPyClient):
 
         self.model = train_vital_signs(training_data_paths=[self.train_data_path], model=self.model, context_length=self.context_len, prediction_length=self.pred_len, max_steps=self.max_steps, optimizer=(optimizer, None), learning_rate=self.learning_rate)
         
-        x = parameters
-        y_i = get_params(self.model)
+        x = [param for i, param in parameters if i not in self.ignore_indices]
+        y_i = [param for i, param in get_params(self.model) if i not in self.ignore_indices]
         c_i_n = []
         server_update_x = []
         server_update_c = []
