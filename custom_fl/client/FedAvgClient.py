@@ -35,6 +35,11 @@ class FlowerClient(NumPyClient):
         
         super().__init__()
 
+        print(" ======= CLIENT CALLED ====")
+        print()
+        print()
+        print("*" * 1000)
+
         self.train_data_path = train_data_path
         self.valdataset = valdataset
         self.val_indices = sorted(np.random.permutation(len(valdataset))[: (val_batches * val_batch_size)])
