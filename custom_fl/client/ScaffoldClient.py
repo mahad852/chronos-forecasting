@@ -127,11 +127,11 @@ class FlowerClient(NumPyClient):
                 c_i_j.detach().cpu()
                 - c_j.detach().cpu()
                 + (1.0 / (self.learning_rate * self.max_steps))
-                * (x_j - y_i_j.detach().cpu())
+                * (x_j - y_i_j)
             )
             # y_i - x, c_i_n - c_i for the server
             server_update_x.append((y_i_j - x_j))
-            server_update_c.append((c_i_n[-1] - c_i_j).cpu().numpy())
+            server_update_c.append((c_i_n[-1] - c_i_j.detach().cpu()).cpu().numpy())
         self.client_cv = c_i_n
         torch.save(self.client_cv, f"{self.dir}/client_cv_{self.client_id}.pt")
 
