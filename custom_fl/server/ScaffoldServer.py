@@ -75,105 +75,28 @@ class ScaffoldServer(Server):
         return get_parameters_res.parameters
 
     # pylint: disable=too-many-locals
-    # def fit_round(
-    #     self,
-    #     server_round: int,
-    #     timeout: Optional[float],
-    # ) -> Optional[
-    #     Tuple[Optional[Parameters], Dict[str, Scalar], FitResultsAndFailures]
-    # ]:
-    #     """Perform a single round of federated averaging."""
-    #     # Get clients and their respective instructions from strateg
-    #     client_instructions = self.strategy.configure_fit(
-    #         server_round=server_round,
-    #         parameters=update_parameters_with_cv(self.parameters, self.server_cv),
-    #         client_manager=self._client_manager,
-    #     )
-
-    #     if not client_instructions:
-    #         log(INFO, "fit_round %s: no clients selected, cancel", server_round)
-    #         return None
-    #     log(
-    #         DEBUG,
-    #         "fit_round %s: strategy sampled %s clients (out of %s)",
-    #         server_round,
-    #         len(client_instructions),
-    #         self._client_manager.num_available(),
-    #     )
-
-    #     # Collect `fit` results from all clients participating in this round
-    #     results, failures = fit_clients(
-    #         client_instructions=client_instructions,
-    #         max_workers=self.max_workers,
-    #         timeout=timeout,
-    #     )
-    #     log(
-    #         DEBUG,
-    #         "fit_round %s received %s results and %s failures",
-    #         server_round,
-    #         len(results),
-    #         len(failures),
-    #     )
-
-    #     # Aggregate training results
-    #     aggregated_result: Tuple[Optional[Parameters], Dict[str, Scalar]] = (
-    #         self.strategy.aggregate_fit(server_round, results, failures)
-    #     )
-
-    #     aggregated_result_arrays_combined = []
-    #     if aggregated_result[0] is not None:
-    #         aggregated_result_arrays_combined = parameters_to_ndarrays(
-    #             aggregated_result[0]
-    #         )
-    #     aggregated_parameters = aggregated_result_arrays_combined[
-    #         : len(aggregated_result_arrays_combined) // 2
-    #     ]
-    #     aggregated_cv_update = aggregated_result_arrays_combined[
-    #         len(aggregated_result_arrays_combined) // 2 :
-    #     ]
-
-    #     # convert server cv into ndarrays
-    #     server_cv_np = [cv.numpy() for cv in self.server_cv]
-    #     # update server cv
-    #     total_clients = len(self._client_manager.all())
-    #     cv_multiplier = len(results) / total_clients
-    #     self.server_cv = [
-    #         torch.from_numpy(cv + cv_multiplier * aggregated_cv_update[i])
-    #         for i, cv in enumerate(server_cv_np)
-    #     ]
-
-    #     # update parameters x = x + 1* aggregated_update
-    #     curr_params = parameters_to_ndarrays(self.parameters)
-    #     updated_params = [
-    #         x + aggregated_parameters[i] for i, x in enumerate(curr_params)
-    #     ]
-    #     parameters_updated = ndarrays_to_parameters(updated_params)
-
-    #     # metrics
-    #     metrics_aggregated = aggregated_result[1]
-    #     return parameters_updated, metrics_aggregated, (results, failures)
-
     def fit_round(
         self,
         server_round: int,
         timeout: Optional[float],
     ) -> Optional[
-        tuple[Optional[Parameters], dict[str, Scalar], FitResultsAndFailures]
+        Tuple[Optional[Parameters], Dict[str, Scalar], FitResultsAndFailures]
     ]:
         """Perform a single round of federated averaging."""
-        # Get clients and their respective instructions from strategy
+        # Get clients and their respective instructions from strateg
         client_instructions = self.strategy.configure_fit(
             server_round=server_round,
-            parameters=self.parameters,
+            parameters=update_parameters_with_cv(self.parameters, self.server_cv),
             client_manager=self._client_manager,
         )
 
         if not client_instructions:
-            log(INFO, "configure_fit: no clients selected, cancel")
+            log(INFO, "fit_round %s: no clients selected, cancel", server_round)
             return None
         log(
-            INFO,
-            "configure_fit: strategy sampled %s clients (out of %s)",
+            DEBUG,
+            "fit_round %s: strategy sampled %s clients (out of %s)",
+            server_round,
             len(client_instructions),
             self._client_manager.num_available(),
         )
@@ -183,24 +106,53 @@ class ScaffoldServer(Server):
             client_instructions=client_instructions,
             max_workers=self.max_workers,
             timeout=timeout,
-            group_id=server_round,
+            group_id=server_round
         )
         log(
-            INFO,
-            "aggregate_fit: received %s results and %s failures",
+            DEBUG,
+            "fit_round %s received %s results and %s failures",
+            server_round,
             len(results),
             len(failures),
         )
 
         # Aggregate training results
-        aggregated_result: tuple[
-            Optional[Parameters],
-            dict[str, Scalar],
-        ] = self.strategy.aggregate_fit(server_round, results, failures)
+        aggregated_result: Tuple[Optional[Parameters], Dict[str, Scalar]] = (
+            self.strategy.aggregate_fit(server_round, results, failures)
+        )
 
-        parameters_aggregated, metrics_aggregated = aggregated_result
-        return parameters_aggregated, metrics_aggregated, (results, failures)
+        aggregated_result_arrays_combined = []
+        if aggregated_result[0] is not None:
+            aggregated_result_arrays_combined = parameters_to_ndarrays(
+                aggregated_result[0]
+            )
+        aggregated_parameters = aggregated_result_arrays_combined[
+            : len(aggregated_result_arrays_combined) // 2
+        ]
+        aggregated_cv_update = aggregated_result_arrays_combined[
+            len(aggregated_result_arrays_combined) // 2 :
+        ]
 
+        # convert server cv into ndarrays
+        server_cv_np = [cv.numpy() for cv in self.server_cv]
+        # update server cv
+        total_clients = len(self._client_manager.all())
+        cv_multiplier = len(results) / total_clients
+        self.server_cv = [
+            torch.from_numpy(cv + cv_multiplier * aggregated_cv_update[i])
+            for i, cv in enumerate(server_cv_np)
+        ]
+
+        # update parameters x = x + 1* aggregated_update
+        curr_params = parameters_to_ndarrays(self.parameters)
+        updated_params = [
+            x + aggregated_parameters[i] for i, x in enumerate(curr_params)
+        ]
+        parameters_updated = ndarrays_to_parameters(updated_params)
+
+        # metrics
+        metrics_aggregated = aggregated_result[1]
+        return parameters_updated, metrics_aggregated, (results, failures)
 
 
 def update_parameters_with_cv(
@@ -218,11 +170,12 @@ def fit_clients(
     client_instructions: List[Tuple[ClientProxy, FitIns]],
     max_workers: Optional[int],
     timeout: Optional[float],
+    group_id: int
 ) -> FitResultsAndFailures:
     """Refine parameters concurrently on all selected clients."""
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         submitted_fs = {
-            executor.submit(fit_client, client_proxy, ins, timeout)
+            executor.submit(fit_client, client_proxy, ins, timeout, group_id)
             for client_proxy, ins in client_instructions
         }
         finished_fs, _ = concurrent.futures.wait(
@@ -241,10 +194,10 @@ def fit_clients(
 
 
 def fit_client(
-    client: ClientProxy, ins: FitIns, timeout: Optional[float]
+    client: ClientProxy, ins: FitIns, timeout: Optional[float], group_id:int
 ) -> Tuple[ClientProxy, FitRes]:
     """Refine parameters on a single client."""
-    fit_res = client.fit(ins, timeout=timeout)
+    fit_res = client.fit(ins, timeout=timeout, group_id=group_id)
     return client, fit_res
 
 
