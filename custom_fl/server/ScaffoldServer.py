@@ -163,11 +163,12 @@ class ScaffoldServer(Server):
         updated_params = [
             x + aggregated_parameters[i] for i, x in enumerate(curr_params)
         ]
+
+        if self.is_chronos_model():
+            updated_params = restore_state_dict(self.sample_model, updated_params)
+
         parameters_updated = ndarrays_to_parameters(updated_params)
         
-        if self.is_chronos_model():
-            parameters_updated = restore_state_dict(self.sample_model, parameters_updated)
-
         # metrics
         metrics_aggregated = aggregated_result[1]
         return parameters_updated, metrics_aggregated, (results, failures)
