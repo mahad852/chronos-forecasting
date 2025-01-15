@@ -117,7 +117,7 @@ class FlowerClient(NumPyClient):
         self.model = train_vital_signs(training_data_paths=[self.train_data_path], model=self.model, context_length=self.context_len, prediction_length=self.pred_len, max_steps=self.max_steps, optimizer=(optimizer, None), learning_rate=self.learning_rate)
         
         x = parameters
-        y_i = [param for param in self.model.parameters()]
+        y_i = [param.detach().cpu() for param in self.model.parameters()]
         c_i_n = []
         server_update_x = []
         server_update_c = []
