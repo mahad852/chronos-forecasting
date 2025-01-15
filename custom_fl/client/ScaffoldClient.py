@@ -170,8 +170,14 @@ def get_scaffold_client_fn(
     weight_decay: float = 0.0,
     learning_rate: float = 1e-3
 ):
+
     def client_fn(context: Context):
         """Returns a FlowerClient containing its data partition."""
+
+        print(" ======= CLIENT CALLED ====")
+        print()
+        print()
+        print("*" * 1000)
 
         partition_id = int(context.node_config["partition-id"])
 
