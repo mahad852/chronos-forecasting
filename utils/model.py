@@ -96,8 +96,9 @@ class ScaffoldOptimizer(SGD):
         super().__init__(
             grads, lr=step_size, momentum=momentum, weight_decay=weight_decay
         )
-        self.server_cv = [s_cv.to(device=torch.device("cuda")) for s_cv in server_cv]
-        self.client_cv = [c_cv.to(device=torch.device("cuda")) for c_cv in client_cv]
+
+        print("***" * 50)
+        print(f"Server_cv len: {len(server_cv)}; client_cv len: {len(client_cv)}")
 
     def step(self, closure=None):
         """Implement the custom step function fo SCAFFOLD."""

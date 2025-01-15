@@ -69,6 +69,8 @@ class FlowerClient(NumPyClient):
         self.log_path = log_path
         self.events_path = os.path.join(self.log_path, "events.txt")
 
+        self.device = torch.device("cuda")
+
         # initialize client control variate with 0 and shape of the network parameters
         self.client_cv = []
         for param in self.model.parameters():
@@ -95,13 +97,13 @@ class FlowerClient(NumPyClient):
 
         self.client_cv = []
         for param in self.model.parameters():
-            self.client_cv.append(param.clone().detach())
+            self.client_cv.append(param.clone().detach().to(device=self.device))
         # load client control variate
         if os.path.exists(f"{self.dir}/client_cv_{self.client_id}.pt"):
             self.client_cv = torch.load(f"{self.dir}/client_cv_{self.client_id}.pt")
 
         # convert the server control variate to a list of tensors
-        server_cv = [torch.Tensor(cv) for cv in server_cv]
+        server_cv = [torch.Tensor(cv).to(device=self.device) for cv in server_cv]
 
         optimizer = ScaffoldOptimizer(self.model.parameters(), self.learning_rate, self.momentum, self.weight_decay, server_cv, self.client_cv)
 
