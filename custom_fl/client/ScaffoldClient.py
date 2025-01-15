@@ -58,6 +58,8 @@ class FlowerClient(NumPyClient):
         )
 
         self.model = load_model(model_id=model_path)
+        
+        self.ignore_indices = get_ignore_indices(self.model)
 
         self.client_id = cid
         self.cid = cid
@@ -92,6 +94,8 @@ class FlowerClient(NumPyClient):
         server_cv = parameters[len(parameters) // 2 :]
         parameters = parameters[: len(parameters) // 2]
         set_params(self.model, parameters)
+
+        server_cv = [s_cv for i, s_cv in enumerate(server_cv) if i not in self.ignore_indices]
 
         log_event(self.events_path, f"STARTING training for client: {self.client_id}")
 
@@ -161,6 +165,14 @@ class FlowerClient(NumPyClient):
         # send statistics back to the server
         return float(rmse), len(self.val_indices), {"mae": mae, "mse": mse, "rmse": rmse, "smape": smape}
 
+
+
+def get_ignore_indices(model: torch.nn.Module) -> List[int]:
+    indices = []
+    for i, name in model.state_dict().keys():
+        if name in ["encoder.embed_tokens.weight", "decoder.embed_tokens.weight", "lm_head.weight"]:
+            indices.append(i)
+    return indices
 
 def get_scaffold_client_fn(
     client_ds, 
