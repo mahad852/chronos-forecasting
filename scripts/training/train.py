@@ -800,7 +800,7 @@ def train_vital_signs(
         model=model,
         args=training_args,
         train_dataset=shuffled_train_dataset,
-        optimizer=optimizer
+        optimizers=optimizer
     )
     log_on_main("Training", logger)
 
