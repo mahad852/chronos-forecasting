@@ -2,7 +2,7 @@ from chronos import ChronosPipeline
 from custom_datasets.vital_signs_dataset import VitalSignsDataset
 import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error
-from typing import List, Tuple, Callable
+from typing import List, Tuple, Callable, Optional
 import torch
 from utils.metrics import calculate_smape
 from collections import OrderedDict
@@ -38,7 +38,7 @@ def batch_loader(indices: List[int], dataset: VitalSignsDataset, batch_size: int
             batch_y.append(y)
         yield torch.tensor(np.array(batch_x)), torch.tensor(np.array(batch_y))
 
-def test(pipeline: ChronosPipeline, dataset: VitalSignsDataset, indices: List[int], pred_len: int, val_batch_size: int):
+def test(pipeline: ChronosPipeline, dataset: VitalSignsDataset, indices: List[int], pred_len: int, val_batch_size: int, max_steps: Optional[int] = 100):
     mses = []
     rmses = []
     maes = []
@@ -66,7 +66,7 @@ def test(pipeline: ChronosPipeline, dataset: VitalSignsDataset, indices: List[in
         smapes.append(smape)
 
         c += 1
-        if c >= 10:
+        if max_steps and c >= max_steps:
             break
 
 

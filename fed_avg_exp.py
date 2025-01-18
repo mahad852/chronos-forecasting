@@ -43,9 +43,14 @@ data_path = args.data_path #"/home/mali2/datasets/vital_signs" # "/Users/ma64959
 val_batch_size = 64
 val_batches = 2000
 
-max_steps_for_clients = [10, 10, 10]
+max_steps_for_clients = [
+    400, 400, 400, 400, 400,
+    400, 400, 400, 400, 400,
+    400, 400, 400, 400, 400,
+    400, 400, 400, 400, 400
+]
 
-num_rounds = 5
+num_rounds = 10
 
 log_path = args.log_path #"logs/fed_avg_hetro2"
 
@@ -58,39 +63,53 @@ if not os.path.exists(log_path):
 event_file = os.path.join(log_path, "events.txt")
 open(event_file, "w").close()
 
-client_ds = [
-    VitalSignsDataset(
-        user_ids=["GDN0001", "GDN0002", "GDN0003", "GDN0004", "GDN0005", "GDN0006", "GDN0007", "GDN0008", "GDN0009", "GDN0010", "GDN0011", "GDN0012", "GDN0013", "GDN0014", "GDN0015"],
-        data_attribute="tfm_ecg2",
-        scenarios=["resting"],
-        context_len=context_len, pred_len=pred_len, 
-        data_path=data_path, 
-        is_train=False,
-    ),
 
-    VitalSignsDataset(
-        user_ids=["GDN0016", "GDN0017", "GDN0018", "GDN0019", "GDN0020", "GDN0021", "GDN0022", "GDN0023", "GDN0024", "GDN0025", "GDN0026", "GDN0027", "GDN0028", "GDN0029", "GDN0030"],
-        data_attribute="tfm_ecg2",
-        scenarios=["resting"],
-        context_len=context_len, pred_len=pred_len, 
-        data_path=data_path, 
-        is_train=False,
-    ),
-
-    VitalSignsDataset(
-        user_ids=["GDN0001", "GDN0002", "GDN0003", "GDN0004", "GDN0005", "GDN0006", "GDN0007", "GDN0008", "GDN0009", "GDN0010", "GDN0011", "GDN0012", "GDN0013", "GDN0014", "GDN0015", 
-                  "GDN0016", "GDN0017", "GDN0018", "GDN0019", "GDN0020", "GDN0021", "GDN0022", "GDN0023", "GDN0024", "GDN0025", "GDN0026", "GDN0027", "GDN0028", "GDN0029", "GDN0030"],
-        data_attribute="tfm_icg",
-        scenarios=["resting"],
-        context_len=context_len, pred_len=pred_len, 
-        data_path=data_path, 
-        is_train=False,
-    ),
-
+all_user_ids = [
+    ["GDN0001", "GDN0002"], ["GDN0003", "GDN0004"], ["GDN0005", "GDN0006"], 
+    ["GDN0007", "GDN0008"], ["GDN0009", "GDN0010"], ["GDN0011", "GDN0012"], 
+    ["GDN0013", "GDN0014"], ["GDN0015", "GDN0016"], ["GDN0017", "GDN0018"], 
+    ["GDN0019", "GDN0020"], ["GDN0021"], ["GDN0022"], ["GDN0023"], ["GDN0024"], 
+    ["GDN0025"], ["GDN0026"], ["GDN0027"], ["GDN0028"], ["GDN0029"], ["GDN0030"]
 ]
 
-for i, client in enumerate(client_ds):
-    create_vital_signs_dataset(client, os.path.join("vital_signs_arrow", f"client0{i + 1}.arrow"))
+all_scenarios = [
+    ["resting"], ["resting"], ["resting"], ["resting"], ["resting"], 
+    ["resting"], ["resting"], ["resting"], ["resting"], ["resting"],
+    ["resting"], ["resting"], ["resting"], ["resting"], ["resting"],
+    ["resting"], ["resting"], ["resting"], ["resting"], ["resting"]
+]
+
+all_data_attributes = [
+    "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2",
+    "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2",
+    "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2",
+    "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2"
+]
+
+client_ds = []
+
+for pid in range(len(all_user_ids)):
+        
+    train_ds = VitalSignsDataset(
+        user_ids=all_user_ids[pid],
+        data_attribute=all_data_attributes[pid],
+        scenarios=all_scenarios[pid],
+        context_len=context_len, pred_len=pred_len, 
+        data_path=data_path, 
+        is_train=True
+    )
+
+    test_ds = VitalSignsDataset(
+        user_ids=all_user_ids[pid],
+        data_attribute=all_data_attributes[pid],
+        scenarios=all_scenarios[pid],
+        context_len=context_len, pred_len=pred_len, 
+        data_path=data_path, 
+        is_train=False
+    )
+
+    create_vital_signs_dataset(train_ds, os.path.join("vital_signs_arrow", f"client0{pid + 1}.arrow"))
+    client_ds.append(test_ds)
 
 client_fn_getter = None
 strategy_class = None
