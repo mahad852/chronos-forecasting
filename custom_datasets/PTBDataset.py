@@ -6,6 +6,7 @@ import numpy as np
 from typing import Dict, Optional
 import os
 import ast
+from sklearn.preprocessing import MinMaxScaler
 
 class PTBDataset(Dataset):
     def __init__(self, partition_path: str, ds_path: str, is_train: bool, pred_len: int, context_len: int, partition_id: Optional[int] = None):
@@ -75,6 +76,10 @@ class PTBDataset(Dataset):
         record_fpath = os.path.join(self.ds_path, self.ptb_df["filename_hr"][record_index])
 
         ecg_signal = self.get_ecg_signal(record_fpath)
+        
+        scaler = MinMaxScaler()
+        model = scaler.fit(ecg_signal.reshape((-1, 1)))
+        ecg_signal = model.transform(ecg_signal.reshape((-1, 1))).reshape((-1))
 
         item = ecg_signal[random_start: (random_start + self.context_len + self.pred_len)]
 
@@ -87,6 +92,10 @@ class PTBDataset(Dataset):
         record_fpath = os.path.join(self.ds_path, self.ptb_df["filename_hr"][record_index])
 
         ecg_signal = self.get_ecg_signal(record_fpath)
+
+        scaler = MinMaxScaler()
+        model = scaler.fit(ecg_signal.reshape((-1, 1)))
+        ecg_signal = model.transform(ecg_signal.reshape((-1, 1))).reshape((-1))
 
         item = ecg_signal[signal_start_index: (signal_start_index + self.context_len + self.pred_len)]
 
