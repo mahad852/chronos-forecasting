@@ -53,12 +53,12 @@ indices = sorted(np.random.permutation(len(test_dataset))[: (batches * batch_siz
 print("Vital signs data loaded.")
 
 # model_path = "scripts/output/run-15/checkpoint-final/ -> mini on 100000 720_1"
-# model_path = "amazon/chronos-t5-tiny"
+model_path = "amazon/chronos-t5-tiny"
 # model_path = "scripts/output/ecg/run-0/checkpoint-final/"
 # model_path = "scripts/output/ecg_icg/run-0/checkpoint-final/"
 # model_path = "scripts/output/ecg_half/run-0/checkpoint-final/"
 # model_path = "scripts/output/ecg_icg_unbalanced_probs/run-0/checkpoint-final/"
-model_path = "logs/fedavg_iid/round-9-weights.npz"
+# model_path = "logs/fedavg_iid/round-9-weights.npz"
 
 pipeline = ChronosPipeline.from_pretrained(
     model_path,
@@ -70,9 +70,9 @@ pipeline = ChronosPipeline.from_pretrained(
 ###############################################################################################################################
 ###############################################################################################################################
 
-# npy_model = np.load("logs/fed_avg_hetro2/round-5-weights.npz")
-# npy_params = [npy_model[file] for file in npy_model.files]
-# set_params(pipeline.model, npy_params)
+npy_model = np.load("logs/fedavg_iid/round-9-weights.npz")
+npy_params = [npy_model[file] for file in npy_model.files]
+set_params(pipeline.model, npy_params)
 
 ###############################################################################################################################
 ###############################################################################################################################
