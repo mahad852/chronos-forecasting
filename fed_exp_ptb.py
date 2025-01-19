@@ -46,7 +46,7 @@ partition_path = args.partition_path
 val_batch_size = 64
 val_batches = 2
 
-num_rounds = 5
+num_rounds = 10
 
 log_path = args.log_path #"logs/fed_avg_hetro2"
 
