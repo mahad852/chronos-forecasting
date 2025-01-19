@@ -10,7 +10,7 @@ context_len = 512
 pred_len = 64
 
 batch_size = 64
-batches = 30000
+batches = 10000
 
 data_path = "/home/mali2/datasets/vital_signs" # "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
 
@@ -57,7 +57,8 @@ print("Vital signs data loaded.")
 # model_path = "scripts/output/ecg/run-0/checkpoint-final/"
 # model_path = "scripts/output/ecg_icg/run-0/checkpoint-final/"
 # model_path = "scripts/output/ecg_half/run-0/checkpoint-final/"
-model_path = "scripts/output/ecg_icg_unbalanced_probs/run-0/checkpoint-final/"
+# model_path = "scripts/output/ecg_icg_unbalanced_probs/run-0/checkpoint-final/"
+model_path = "logs/fedavg_iid/round-9-weights.npz"
 
 pipeline = ChronosPipeline.from_pretrained(
     model_path,
@@ -158,7 +159,9 @@ if not os.path.exists("logs"):
 # with open(os.path.join("logs", f"Chronos_Tiny_Cen_Resting_{context_len}_{pred_len}.csv"), "w") as f:
 # with open(os.path.join("logs", f"Chronos_Tiny_CenBoth_Resting_{context_len}_{pred_len}.csv"), "w") as f:
 # with open(os.path.join("logs", f"Chronos_Tiny_CenEcgHalf_Resting_{context_len}_{pred_len}.csv"), "w") as f:
-with open(os.path.join("logs", f"Chronos_Tiny_CenBothUnbalanced_ICG_{context_len}_{pred_len}.csv"), "w") as f:
+# with open(os.path.join("logs", f"Chronos_Tiny_CenBothUnbalanced_ICG_{context_len}_{pred_len}.csv"), "w") as f:
+
+with open(os.path.join("logs", f"Chronos_Tiny_FA_IID_9_{context_len}_{pred_len}.csv"), "w") as f:
     f.write("context_len,horizon_len,MSE,RMSE,MAE,SMAPE\n")
     for p_len in range(1, pred_len + 1):
         f.write(f"{context_len},{p_len},{mse_by_pred_len[p_len]},{rmse_by_pred_len[p_len]},{mae_by_pred_len[p_len]},{smapes_by_pred_len[p_len]}")
