@@ -40,7 +40,7 @@ for num in range(1, 31):
 
 test_dataset = VitalSignsDataset(
     user_ids=user_ids,
-    data_attribute="tfm_icg",
+    data_attribute="tfm_ecg",
     scenarios=["resting"],
     data_path=data_path,
     is_train=False,
