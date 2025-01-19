@@ -73,7 +73,7 @@ pipeline = ChronosPipeline.from_pretrained(
 
 npy_model = np.load("logs/scaffold_iid/round-10-weights.npz")
 npy_params = [npy_model[file] for file in npy_model.files]
-restore_state_dict(pipeline.model, npy_params)
+npy_params = restore_state_dict(pipeline.model, npy_params)
 set_params(pipeline.model, npy_params)
 
 ###############################################################################################################################
