@@ -1,5 +1,5 @@
 from chronos import ChronosPipeline
-from custom_datasets.vital_signs_dataset import VitalSignsDataset
+from torch.utils.data import Dataset
 import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from typing import List, Tuple, Callable, Optional
@@ -27,7 +27,7 @@ def get_params(model: torch.nn.Module):
     """Extract model parameters as a list of NumPy arrays."""
     return [val.cpu().numpy() for _, val in model.state_dict().items()]
 
-def batch_loader(indices: List[int], dataset: VitalSignsDataset, batch_size: int):
+def batch_loader(indices: List[int], dataset: Dataset, batch_size: int):
     for start_index in range(0, len(indices), batch_size):
         end_index = min(len(indices), start_index + batch_size)
         batch_indices = indices[start_index:end_index]
@@ -38,13 +38,11 @@ def batch_loader(indices: List[int], dataset: VitalSignsDataset, batch_size: int
             batch_y.append(y)
         yield torch.tensor(np.array(batch_x)), torch.tensor(np.array(batch_y))
 
-def test(pipeline: ChronosPipeline, dataset: VitalSignsDataset, indices: List[int], pred_len: int, val_batch_size: int, max_steps: Optional[int] = 100):
+def test(pipeline: ChronosPipeline, dataset: Dataset, indices: List[int], pred_len: int, val_batch_size: int):
     mses = []
     rmses = []
     maes = []
     smapes = []
-
-    c = 0
 
     for _, (x, y) in enumerate(batch_loader(indices, dataset, val_batch_size)):
         forecast = pipeline.predict(
@@ -64,11 +62,6 @@ def test(pipeline: ChronosPipeline, dataset: VitalSignsDataset, indices: List[in
         rmses.append(rmse)
         maes.append(mae)
         smapes.append(smape)
-
-        c += 1
-        if max_steps and c >= max_steps:
-            break
-
 
     return np.average(mses), np.average(rmses), np.average(maes), np.average(smapes)
 

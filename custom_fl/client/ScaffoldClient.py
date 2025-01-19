@@ -166,6 +166,7 @@ class FlowerClient(NumPyClient):
 
 def get_scaffold_client_fn(
     client_ds, 
+    train_root: str,
     val_batches: int, 
     val_batch_size: int, 
     max_steps_for_clients: List[int], 
@@ -182,7 +183,7 @@ def get_scaffold_client_fn(
 
         partition_id = int(context.node_config["partition-id"])
 
-        return FlowerClient(train_data_path=f"vital_signs_arrow/client0{partition_id + 1}.arrow", 
+        return FlowerClient(train_data_path=f"{train_root}/client0{partition_id + 1}.arrow", 
                             valdataset=client_ds[partition_id],
                             cid=partition_id + 1,
                             val_batches=val_batches,

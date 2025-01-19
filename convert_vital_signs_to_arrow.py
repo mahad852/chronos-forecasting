@@ -4,6 +4,8 @@ from typing import List, Optional, Union
 import numpy as np
 from gluonts.dataset.arrow import ArrowWriter
 from custom_datasets.vital_signs_dataset import VitalSignsDataset
+from custom_datasets.PTBDataset import PTBDataset
+
 
 import os
 
@@ -36,6 +38,15 @@ def create_vital_signs_dataset(dataset: VitalSignsDataset, file_path: str):
         time_series.append(data)
     
     convert_to_arrow(file_path, time_series=time_series)
+
+def create_ptb_dataset(dataset: PTBDataset, file_path: str):
+    time_series = []
+
+    for (context, target) in dataset:
+        data = np.append(context, target)
+        time_series.append(data)
+    
+    convert_to_arrow(file_path, time_series)
         
 
 if __name__ == "__main__":

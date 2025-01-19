@@ -1,6 +1,6 @@
 from scripts.training.train import load_model
 
-from custom_datasets.vital_signs_dataset import VitalSignsDataset
+from custom_datasets.PTBDataset import PTBDataset
 
 from flwr.common import ndarrays_to_parameters
 from flwr.server import ServerConfig
@@ -22,12 +22,14 @@ from flwr.server.client_manager import SimpleClientManager
 
 from utils.model import gen_weighted_avergage_fn, get_params
 
-from convert_vital_signs_to_arrow import create_vital_signs_dataset
+from convert_vital_signs_to_arrow import create_ptb_dataset
+import json
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--strategy", help="The strategy to use. pass one of 'scaffold' or 'fedavg'")
 parser.add_argument("--log_path", help="The path where weights and event logs would be stored.")
 parser.add_argument("--data_path", help="The path where the dataset is stored.")
+parser.add_argument("--partition_path", help="The path where the partition json is stored.")
 
 args = parser.parse_args()
 
@@ -39,23 +41,14 @@ pred_len = 64
 model_path = "amazon/chronos-t5-tiny"
 
 data_path = args.data_path #"/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
+partition_path = args.partition_path
 
 val_batch_size = 64
-val_batches = 2000
+val_batches = 2
 
-max_steps_for_clients = [
-    400, 400, 400, 400, 400,
-    400, 400, 400, 400, 400,
-    400, 400, 400, 400, 400,
-    400, 400, 400, 400, 400
-]
-
-num_rounds = 10
+num_rounds = 5
 
 log_path = args.log_path #"logs/fed_avg_hetro2"
-
-if not os.path.exists("logs"):
-    os.mkdir("logs")
 
 if not os.path.exists(log_path):
     os.mkdir(log_path)
@@ -64,52 +57,35 @@ event_file = os.path.join(log_path, "events.txt")
 open(event_file, "w").close()
 
 
-all_user_ids = [
-    ["GDN0001", "GDN0002"], ["GDN0003", "GDN0004"], ["GDN0005", "GDN0006"], 
-    ["GDN0007", "GDN0008"], ["GDN0009", "GDN0010"], ["GDN0011", "GDN0012"], 
-    ["GDN0013", "GDN0014"], ["GDN0015", "GDN0016"], ["GDN0017", "GDN0018"], 
-    ["GDN0019", "GDN0020"], ["GDN0021"], ["GDN0022"], ["GDN0023"], ["GDN0024"], 
-    ["GDN0025"], ["GDN0026"], ["GDN0027"], ["GDN0028"], ["GDN0029"], ["GDN0030"]
-]
-
-all_scenarios = [
-    ["resting"], ["resting"], ["resting"], ["resting"], ["resting"], 
-    ["resting"], ["resting"], ["resting"], ["resting"], ["resting"],
-    ["resting"], ["resting"], ["resting"], ["resting"], ["resting"],
-    ["resting"], ["resting"], ["resting"], ["resting"], ["resting"]
-]
-
-all_data_attributes = [
-    "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2",
-    "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2",
-    "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2",
-    "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2"
-]
+with open(partition_path, "r") as f:
+    partition_ids = json.load(f)["partition"].keys()
 
 client_ds = []
+max_steps_for_clients = []
 
-for pid in range(len(all_user_ids)):
-        
-    train_ds = VitalSignsDataset(
-        user_ids=all_user_ids[pid],
-        data_attribute=all_data_attributes[pid],
-        scenarios=all_scenarios[pid],
-        context_len=context_len, pred_len=pred_len, 
+for i, pid in enumerate(partition_ids):
+    train_ds = PTBDataset(
+        partition_path=partition_path, 
         data_path=data_path, 
-        is_train=True
+        is_train=True, 
+        pred_len=pred_len, 
+        context_len=context_len, 
+        partition_id=pid
     )
 
-    test_ds = VitalSignsDataset(
-        user_ids=all_user_ids[pid],
-        data_attribute=all_data_attributes[pid],
-        scenarios=all_scenarios[pid],
-        context_len=context_len, pred_len=pred_len, 
+    test_ds = PTBDataset(
+        partition_path=partition_path, 
         data_path=data_path, 
-        is_train=False
+        is_train=False, 
+        pred_len=pred_len, 
+        context_len=context_len, 
+        partition_id=pid
     )
 
-    create_vital_signs_dataset(train_ds, os.path.join("vital_signs_arrow", f"client0{pid + 1}.arrow"))
+    create_ptb_dataset(train_ds, os.path.join("ptb_arrow", f"client0{pid + 1}.arrow"))
     client_ds.append(test_ds)
+
+    max_steps_for_clients.append(len(train_ds))
 
 client_fn_getter = None
 strategy_class = None
@@ -123,7 +99,7 @@ elif args.strategy == "scaffold":
     strategy_class = ScaffoldStrategy
 
 client_fn = client_fn_getter(client_ds=client_ds,
-                             train_root="vital_signs_arrow",
+                             train_root="ptb_arrow",
                              val_batches=val_batches, val_batch_size=val_batch_size, 
                              max_steps_for_clients=max_steps_for_clients, 
                              context_len=context_len, pred_len= pred_len, 
