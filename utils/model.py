@@ -99,6 +99,9 @@ def omit_non_weights_from_state_dict(model: torch.nn.Module, state_dict_params) 
     return [param for i, param in enumerate(state_dict_params) if i not in ignore_indices]
 
 def restore_state_dict(model: torch.nn.Module, params) -> List:
+    if len(params) == len(model.state_dict().items()):
+        return params
+    
     weight_names = [name for (name, _) in model.named_parameters()]
     weight_name_to_param_index = {n:i for i, n in enumerate(weight_names)}
 

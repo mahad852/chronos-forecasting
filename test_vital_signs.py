@@ -5,6 +5,7 @@ import torch
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from custom_datasets.vital_signs_dataset import VitalSignsDataset
 from typing import List, OrderedDict
+from utils.model import restore_state_dict
 
 context_len = 512
 pred_len = 64
@@ -70,8 +71,9 @@ pipeline = ChronosPipeline.from_pretrained(
 ###############################################################################################################################
 ###############################################################################################################################
 
-npy_model = np.load("logs/scaffold_iid/round-9-weights.npz")
+npy_model = np.load("logs/scaffold_iid/round-10-weights.npz")
 npy_params = [npy_model[file] for file in npy_model.files]
+restore_state_dict(pipeline.model, npy_params)
 set_params(pipeline.model, npy_params)
 
 ###############################################################################################################################
