@@ -66,7 +66,7 @@ max_steps_for_clients = []
 for i, pid in enumerate(partition_ids):
     train_ds = PTBDataset(
         partition_path=partition_path, 
-        data_path=data_path, 
+        ds_path=data_path, 
         is_train=True, 
         pred_len=pred_len, 
         context_len=context_len, 
@@ -75,7 +75,7 @@ for i, pid in enumerate(partition_ids):
 
     test_ds = PTBDataset(
         partition_path=partition_path, 
-        data_path=data_path, 
+        ds_path=data_path, 
         is_train=False, 
         pred_len=pred_len, 
         context_len=context_len, 
