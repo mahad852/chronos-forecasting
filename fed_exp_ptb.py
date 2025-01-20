@@ -30,6 +30,7 @@ parser.add_argument("--strategy", help="The strategy to use. pass one of 'scaffo
 parser.add_argument("--log_path", help="The path where weights and event logs would be stored.")
 parser.add_argument("--data_path", help="The path where the dataset is stored.")
 parser.add_argument("--partition_path", help="The path where the partition json is stored.")
+parser.add_argument("--cv_dir", help="directory to save client cvs for scaffold", default="")
 
 args = parser.parse_args()
 
@@ -53,11 +54,11 @@ log_path = args.log_path #"logs/fed_avg_hetro2"
 if not os.path.exists(log_path):
     os.mkdir(log_path)
 
-if args.strategy == "scaffold" and os.path.exists("client_cvs"):
-    for file in os.listdir("client_cvs"):
-        os.remove(os.path.join("client_cvs", file))
-    os.removedirs("client_cvs")
-
+if args.strategy == "scaffold" and args.cv_dir != "" and os.path.exists(args.cv_dir):
+    for file in os.listdir(args.cv_dir):
+        os.remove(os.path.join(args.cv_dir, file))
+    os.removedirs(args.cv_dir)
+    
 event_file = os.path.join(log_path, "events.txt")
 open(event_file, "w").close()
 
@@ -108,7 +109,7 @@ client_fn = client_fn_getter(client_ds=client_ds,
                              val_batches=val_batches, val_batch_size=val_batch_size, 
                              max_steps_for_clients=max_steps_for_clients, 
                              context_len=context_len, pred_len= pred_len, 
-                             log_path=log_path)
+                             log_path=log_path, save_dir=args.cv_dir)
 
 model = load_model(model_id=model_path)
 ndarrays = get_params(model)

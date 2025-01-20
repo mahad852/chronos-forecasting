@@ -35,10 +35,10 @@ args = parser.parse_args()
 if args.strategy not in ["fedavg", "scaffold"]:
     raise NotImplementedError(f"{args.strategy} is not support. Please use the --help flag to see valid strategy options.")
 
-if args.strategy == "scaffold" and os.path.exists("client_cvs"):
-    for file in os.listdir("client_cvs"):
-        os.remove(os.path.join("client_cvs", file))
-    os.removedirs("client_cvs")
+if args.strategy == "scaffold" and args.cv_dir != "" and os.path.exists(args.cv_dir):
+    for file in os.listdir(args.cv_dir):
+        os.remove(os.path.join(args.cv_dir, file))
+    os.removedirs(args.cv_dir)
 
 context_len = 512
 pred_len = 64
@@ -133,7 +133,7 @@ client_fn = client_fn_getter(client_ds=client_ds,
                              val_batches=val_batches, val_batch_size=val_batch_size, 
                              max_steps_for_clients=max_steps_for_clients, 
                              context_len=context_len, pred_len=pred_len, 
-                             log_path=log_path, save_dir=args.save_dir)
+                             log_path=log_path, save_dir=args.cv_dir)
 
 model = load_model(model_id=model_path)
 ndarrays = get_params(model)
