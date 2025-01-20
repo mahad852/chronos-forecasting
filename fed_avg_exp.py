@@ -119,6 +119,7 @@ for pid in range(len(all_user_ids)):
     indices = sorted(np.random.permutation(len(train_ds))[:max_steps_for_clients[pid]])
 
     create_vital_signs_dataset(train_ds, os.path.join("vital_signs_arrow", f"client0{pid + 1}.arrow"), indices)
+    print("Created client:", pid + 1)
     client_ds.append(test_ds)
 
 client_fn_getter = None
