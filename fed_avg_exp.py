@@ -34,6 +34,11 @@ args = parser.parse_args()
 if args.strategy not in ["fedavg", "scaffold"]:
     raise NotImplementedError(f"{args.strategy} is not support. Please use the --help flag to see valid strategy options.")
 
+if args.strategy == "scaffold" and os.path.exists("client_cvs"):
+    for file in os.listdir("client_cvs"):
+        os.remove(os.path.join("client_cvs", file))
+    os.removedirs("client_cvs")
+
 context_len = 512
 pred_len = 64
 model_path = "amazon/chronos-t5-tiny"

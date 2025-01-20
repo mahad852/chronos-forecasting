@@ -9,7 +9,7 @@ import ast
 from sklearn.preprocessing import MinMaxScaler
 
 class PTBDataset(Dataset):
-    def __init__(self, partition_path: str, ds_path: str, is_train: bool, pred_len: int, context_len: int, partition_id: Optional[int] = None):
+    def __init__(self, partition_path: str, ds_path: str, is_train: bool, pred_len: int, context_len: int, partition_id: Optional[int] = None, filter_site: Optional[int] = None):
         self.is_train = is_train
         self.ds_path = ds_path
         self.pred_len = pred_len
@@ -20,6 +20,8 @@ class PTBDataset(Dataset):
         self.ptb_df = self.get_ptb_df()
 
         self.partition_id = partition_id
+
+        self.filter_site = filter_site
 
         if self.is_train and not self.partition_id:
             raise Exception("parititon_id is required in train mode")
@@ -54,14 +56,17 @@ class PTBDataset(Dataset):
 
         if self.is_train:
             return patient_df.iloc[self.partition_info["train_idx"]].reset_index()
-        else: 
+        elif not self.filter_site: 
             return patient_df.iloc[self.partition_info["test_idx"]].reset_index()
-    
+        else:
+            patient_df = patient_df.iloc[self.partition_info["test_idx"]]
+            return patient_df[patient_df["site"] == self.filter_site].reset_index()
+
     def __len__(self):
         if self.is_train:
             return self.partition_info["partition"][self.partition_id]["partition_size"]
         else:
-            return len(self.partition_info["test_idx"]) * (5000 - self.context_len - self.pred_len + 1)
+            return len(self.ptb_df) * (5000 - self.context_len - self.pred_len + 1)
         
     def get_ecg_signal(self, fpath: str):
         record = wfdb.rdrecord(fpath)
