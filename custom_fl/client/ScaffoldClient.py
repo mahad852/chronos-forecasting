@@ -173,6 +173,7 @@ def get_scaffold_client_fn(
     context_len: int, 
     pred_len: int, 
     log_path: str,
+    save_dir: str = "",
     momentum: float = 0.9,
     weight_decay: float = 0.0,
     learning_rate: float = 1e-3
@@ -194,6 +195,7 @@ def get_scaffold_client_fn(
                             log_path=log_path,
                             momentum=momentum,
                             weight_decay=weight_decay,
-                            learning_rate=learning_rate).to_client()
+                            learning_rate=learning_rate,
+                            save_dir="").to_client()
     
     return client_fn

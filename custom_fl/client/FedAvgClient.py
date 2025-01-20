@@ -94,7 +94,7 @@ class FlowerClient(NumPyClient):
         return float(rmse), len(self.val_indices), {"mae": mae, "mse": mse, "rmse": rmse, "smape": smape}
     
 
-def get_fedavg_client_fn(client_ds, train_root: str, val_batches: int, val_batch_size: int, max_steps_for_clients: List[int], context_len: int, pred_len: int, log_path: str):
+def get_fedavg_client_fn(client_ds, train_root: str, val_batches: int, val_batch_size: int, max_steps_for_clients: List[int], context_len: int, pred_len: int, log_path: str, save_dir: str = ""):
     def client_fn(context: Context):
         """Returns a FlowerClient containing its data partition."""
 

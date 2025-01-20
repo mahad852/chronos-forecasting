@@ -28,6 +28,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--strategy", help="The strategy to use. pass one of 'scaffold' or 'fedavg'")
 parser.add_argument("--log_path", help="The path where weights and event logs would be stored.")
 parser.add_argument("--data_path", help="The path where the dataset is stored.")
+parser.add_argument("--cv_dir", help="directory to save client cvs for scaffold", default="")
 
 args = parser.parse_args()
 
@@ -131,8 +132,8 @@ client_fn = client_fn_getter(client_ds=client_ds,
                              train_root="vital_signs_arrow",
                              val_batches=val_batches, val_batch_size=val_batch_size, 
                              max_steps_for_clients=max_steps_for_clients, 
-                             context_len=context_len, pred_len= pred_len, 
-                             log_path=log_path)
+                             context_len=context_len, pred_len=pred_len, 
+                             log_path=log_path, save_dir=args.save_dir)
 
 model = load_model(model_id=model_path)
 ndarrays = get_params(model)
