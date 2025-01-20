@@ -33,8 +33,8 @@ def convert_to_arrow(
 def create_vital_signs_dataset(dataset: VitalSignsDataset, file_path: str):
     time_series = []
 
-    for user_data_path in dataset.user_data_paths:
-        data = dataset.get_data(user_data_path)
+    for (context, target) in dataset.user_data_paths:
+        data = np.append(context, target)
         time_series.append(data)
     
     convert_to_arrow(file_path, time_series=time_series)
