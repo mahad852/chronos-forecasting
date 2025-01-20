@@ -65,7 +65,7 @@ class VitalSignsDataset(Dataset):
     def get_data(self, file):
         data = scipy.io.loadmat(file)[self.data_attribute].reshape(-1)
 
-        total = self.data.shape[0]
+        total = data.shape[0]
         if self.is_train:
             data = data[:int(total * 0.60)]
         else:
