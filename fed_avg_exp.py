@@ -8,6 +8,8 @@ from flwr.simulation import start_simulation
 
 import os
 
+import numpy as np
+
 import argparse
 
 from custom_fl.strategy.FedAvgStrategy import FedAvgStrategy
@@ -114,7 +116,9 @@ for pid in range(len(all_user_ids)):
         is_train=False
     )
 
-    create_vital_signs_dataset(train_ds, os.path.join("vital_signs_arrow", f"client0{pid + 1}.arrow"))
+    indices = sorted(np.random.permutation(len(train_ds))[:max_steps_for_clients[pid]])
+
+    create_vital_signs_dataset(train_ds, os.path.join("vital_signs_arrow", f"client0{pid + 1}.arrow"), indices)
     client_ds.append(test_ds)
 
 client_fn_getter = None

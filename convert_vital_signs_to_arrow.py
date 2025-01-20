@@ -30,10 +30,14 @@ def convert_to_arrow(
         path=path,
     )
 
-def create_vital_signs_dataset(dataset: VitalSignsDataset, file_path: str):
+def create_vital_signs_dataset(dataset: VitalSignsDataset, file_path: str, indices: Optional[List[int]] = None):
     time_series = []
+    
+    if not indices:
+        indices = list(np.arange(len(dataset)))
 
-    for (context, target) in dataset:
+    for index in indices:
+        (context, target) = dataset[index]
         data = np.append(context, target)
         time_series.append(data)
     
