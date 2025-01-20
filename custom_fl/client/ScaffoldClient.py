@@ -196,6 +196,6 @@ def get_scaffold_client_fn(
                             momentum=momentum,
                             weight_decay=weight_decay,
                             learning_rate=learning_rate,
-                            save_dir="").to_client()
+                            save_dir=save_dir).to_client()
     
     return client_fn
