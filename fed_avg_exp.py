@@ -42,6 +42,8 @@ if args.strategy == "scaffold" and args.cv_dir != "" and os.path.exists(args.cv_
         os.remove(os.path.join(args.cv_dir, file))
     os.removedirs(args.cv_dir)
 
+os.makedirs(args.cv_dir)
+
 context_len = 512
 pred_len = 64
 model_path = "amazon/chronos-t5-tiny"
@@ -49,7 +51,7 @@ model_path = "amazon/chronos-t5-tiny"
 data_path = args.data_path #"/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
 
 val_batch_size = 64
-val_batches = 2000
+val_batches = 2
 
 max_steps_for_clients = [
     400, 400, 400, 400, 400,
