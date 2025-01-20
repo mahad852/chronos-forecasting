@@ -23,6 +23,8 @@ class VitalSignsDataset(Dataset):
         self.is_train = is_train
 
         self.data_attribute = data_attribute
+        self.context_len = context_len
+        self.pred_len = pred_len
 
         self.validate_path(self.root_folder, f"Incorrect data_path supplied. Expected a directory, {self.root_folder} is not a directory.")
         
@@ -32,10 +34,6 @@ class VitalSignsDataset(Dataset):
         self.start_indices = [0]
         for i in range(1, len(self.data_lens)):
             self.start_indices.append(self.start_indices[i - 1] + (self.data_lens[i - 1] - self.context_len - self.pred_len + 1))
-
-        self.context_len = context_len
-        self.pred_len = pred_len
-
 
     def __len__(self):
         return sum([data_len - self.pred_len - self.context_len + 1 for data_len in self.data_lens])
