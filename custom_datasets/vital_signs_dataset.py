@@ -29,6 +29,8 @@ class VitalSignsDataset(Dataset):
         self.validate_path(self.root_folder, f"Incorrect data_path supplied. Expected a directory, {self.root_folder} is not a directory.")
         
         self.user_data_paths = self.get_user_data_paths(user_ids, scenarios)
+
+        self.data_file = None
         self.data_lens = [len(self.get_data(user_data_path)) for user_data_path in self.user_data_paths]
 
         self.start_indices = [0]
@@ -61,19 +63,24 @@ class VitalSignsDataset(Dataset):
             raise ValueError(error_msg)
 
     def get_data(self, file):
-        data = scipy.io.loadmat(file)[self.data_attribute].reshape(-1)
+        if self.data_file != file:
+            if self.data_file is not None:
+                del self.data
 
-        total = data.shape[0]
-        if self.is_train:
-            data = data[:int(total * 0.60)]
-        else:
-            data = data[int(total * 0.60):]
-        
-        scaler = MinMaxScaler()
-        model = scaler.fit(data.reshape((-1, 1)))
-        data = model.transform(data.reshape((-1, 1))).reshape((-1))
+            self.data_file = file
+            self.data = scipy.io.loadmat(file)[self.data_attribute].reshape(-1)
 
-        return data
+            total = self.data.shape[0]
+            if self.is_train:
+                self.data = self.data[:int(total * 0.60)]
+            else:
+                self.data = self.data[int(total * 0.60):]
+            
+            scaler = MinMaxScaler()
+            model = scaler.fit(self.data.reshape((-1, 1)))
+            self.data = model.transform(self.data.reshape((-1, 1))).reshape((-1))
+
+        return self.data
     
         
     def __getitem__(self, index):
