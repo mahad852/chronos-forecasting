@@ -77,7 +77,7 @@ class VitalSignsDataset(Dataset):
     
         
     def __getitem__(self, index):
-        file_index = len(self.start_indices)
+        file_index = len(self.start_indices) - 1
         for i in range(len(self.start_indices) - 1):
             if index >= self.start_indices[i] and index < self.start_indices[i + 1]:
                 file_index = i
