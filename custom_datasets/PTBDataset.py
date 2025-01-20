@@ -17,11 +17,11 @@ class PTBDataset(Dataset):
 
         self.partition_info = self.get_partition_info(partition_path)
 
+        self.filter_site = filter_site
+
         self.ptb_df = self.get_ptb_df()
 
         self.partition_id = partition_id
-
-        self.filter_site = filter_site
 
         if self.is_train and not self.partition_id:
             raise Exception("parititon_id is required in train mode")
