@@ -54,12 +54,12 @@ log_path = args.log_path #"logs/fed_avg_hetro2"
 if not os.path.exists(log_path):
     os.mkdir(log_path)
 
-if args.strategy == "scaffold" and args.cv_dir != "" and os.path.exists(args.cv_dir):
-    for file in os.listdir(args.cv_dir):
-        os.remove(os.path.join(args.cv_dir, file))
-    os.removedirs(args.cv_dir)
-
-os.makedirs(args.cv_dir)
+if args.strategy == "scaffold" and args.cv_dir != "":
+    if os.path.exists(args.cv_dir):
+        for file in os.listdir(args.cv_dir):
+            os.remove(os.path.join(args.cv_dir, file))
+        os.removedirs(args.cv_dir)
+    os.makedirs(args.cv_dir)
 
 event_file = os.path.join(log_path, "events.txt")
 open(event_file, "w").close()
