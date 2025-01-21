@@ -6,6 +6,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 from custom_datasets.vital_signs_dataset import VitalSignsDataset
 from typing import List, OrderedDict
 from utils.model import restore_state_dict
+import argparse
 
 context_len = 512
 pred_len = 64
@@ -13,7 +14,15 @@ pred_len = 64
 batch_size = 64
 batches = 10000
 
-data_path = "/home/mali2/datasets/vital_signs" # "/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
+parser = argparse.ArgumentParser()
+parser.add_argument("--log_path", help="The path where weights and event logs would be stored.")
+parser.add_argument("--data_path", help="The path where the dataset is stored.")
+parser.add_argument("--model_path", help="The path where the model weights are stored.", default=None)
+
+args = parser.parse_args()
+
+data_path = args.data_path
+log_path = args.log_path
 
 def calculate_smape(y_gt, y_pred):
     return np.mean(200 * np.abs(y_pred - y_gt) / (np.abs(y_pred) + np.abs(y_gt) + 1e-8))
@@ -71,10 +80,11 @@ pipeline = ChronosPipeline.from_pretrained(
 ###############################################################################################################################
 ###############################################################################################################################
 
-npy_model = np.load("logs/scaffold_iid/round-10-weights.npz")
-npy_params = [npy_model[file] for file in npy_model.files]
-npy_params = restore_state_dict(pipeline.model, npy_params)
-set_params(pipeline.model, npy_params)
+if args.model_path:
+    npy_model = np.load(args.model_path)
+    npy_params = [npy_model[file] for file in npy_model.files]
+    npy_params = restore_state_dict(pipeline.model, npy_params)
+    set_params(pipeline.model, npy_params)
 
 ###############################################################################################################################
 ###############################################################################################################################
@@ -164,7 +174,7 @@ if not os.path.exists("logs"):
 # with open(os.path.join("logs", f"Chronos_Tiny_CenBothUnbalanced_ICG_{context_len}_{pred_len}.csv"), "w") as f:
 # with open(os.path.join("logs", f"Chronos_Tiny_FA_IID_9_{context_len}_{pred_len}.csv"), "w") as f:
 
-with open(os.path.join("logs", f"Chronos_Tiny_Scaffold_IID_9_{context_len}_{pred_len}.csv"), "w") as f:
+with open(os.path.join("logs", log_path), "w") as f:
     f.write("context_len,horizon_len,MSE,RMSE,MAE,SMAPE\n")
     for p_len in range(1, pred_len + 1):
         f.write(f"{context_len},{p_len},{mse_by_pred_len[p_len]},{rmse_by_pred_len[p_len]},{mae_by_pred_len[p_len]},{smapes_by_pred_len[p_len]}")
