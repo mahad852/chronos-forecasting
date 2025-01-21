@@ -38,12 +38,12 @@ args = parser.parse_args()
 if args.strategy not in ["fedavg", "scaffold", "local"]:
     raise NotImplementedError(f"{args.strategy} is not support. Please use the --help flag to see valid strategy options.")
 
-if args.strategy == "scaffold" and args.cv_dir != "" and os.path.exists(args.cv_dir):
-    for file in os.listdir(args.cv_dir):
-        os.remove(os.path.join(args.cv_dir, file))
-    os.removedirs(args.cv_dir)
-
-os.makedirs(args.cv_dir)
+if args.strategy == "scaffold" and args.cv_dir != "":
+    if os.path.exists(args.cv_dir):
+        for file in os.listdir(args.cv_dir):
+            os.remove(os.path.join(args.cv_dir, file))
+        os.removedirs(args.cv_dir)
+    os.makedirs(args.cv_dir)
 
 context_len = 512
 pred_len = 64
