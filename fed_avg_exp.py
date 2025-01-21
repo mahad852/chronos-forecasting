@@ -17,6 +17,7 @@ from custom_fl.strategy.ScaffoldStrategy import ScaffoldStrategy
 
 from custom_fl.client.FedAvgClient import get_fedavg_client_fn
 from custom_fl.client.ScaffoldClient import get_scaffold_client_fn
+from custom_fl.client.LocalClient import get_local_client_fn
 
 from custom_fl.server.ScaffoldServer import ScaffoldServer
 from flwr.server import Server
@@ -34,7 +35,7 @@ parser.add_argument("--cv_dir", help="directory to save client cvs for scaffold"
 
 args = parser.parse_args()
 
-if args.strategy not in ["fedavg", "scaffold"]:
+if args.strategy not in ["fedavg", "scaffold", "local"]:
     raise NotImplementedError(f"{args.strategy} is not support. Please use the --help flag to see valid strategy options.")
 
 if args.strategy == "scaffold" and args.cv_dir != "" and os.path.exists(args.cv_dir):
@@ -134,6 +135,9 @@ if args.strategy == "fedavg":
 elif args.strategy == "scaffold":
     client_fn_getter = get_scaffold_client_fn
     strategy_class = ScaffoldStrategy
+elif args.strategy == "local":
+    client_fn_getter = get_local_client_fn
+    strategy_class = FedAvgStrategy
 
 client_fn = client_fn_getter(client_ds=client_ds,
                              train_root="vital_signs_arrow",
