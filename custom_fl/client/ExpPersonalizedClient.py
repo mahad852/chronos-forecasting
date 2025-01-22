@@ -110,7 +110,7 @@ class FlowerClient(NumPyClient):
         log_event(self.events_path, f"COMPLETED eval for client: {self.client_id}")
 
         # send statistics back to the server
-        return float(rmse), len(self.val_indices), {"mae": mae, "mse": mse, "rmse": rmse, "smape": smape}
+        return float(rmse), len(self.valdataset), {"mae": mae, "mse": mse, "rmse": rmse, "smape": smape}
     
     def load_local_params(self):
         npy_model = np.load(os.path.join(self.log_path, "client_weights", f"client_{self.client_id}.npz"))

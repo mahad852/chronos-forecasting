@@ -91,7 +91,7 @@ class FlowerClient(NumPyClient):
         log_event(self.events_path, f"COMPLETED eval for client: {self.client_id}")
 
         # send statistics back to the server
-        return float(rmse), len(self.val_indices), {"mae": mae, "mse": mse, "rmse": rmse, "smape": smape}
+        return float(rmse), len(self.valdataset), {"mae": mae, "mse": mse, "rmse": rmse, "smape": smape}
     
 
 def get_fedavg_client_fn(client_ds, train_root: str, val_batches: int, val_batch_size: int, max_steps_for_clients: List[int], context_len: int, pred_len: int, log_path: str, save_dir: str = ""):

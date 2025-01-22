@@ -66,7 +66,7 @@ class PTBDataset(Dataset):
         if self.is_train:
             return self.partition_info["partition"][self.partition_id]["partition_size"]
         else:
-            return len(self.ptb_df) * (5000 - self.context_len - self.pred_len + 1)
+            return self.partition_info["test_partition"][self.partition_id]["partition_size"] * (5000 - self.context_len - self.pred_len + 1)
         
     def get_ecg_signal(self, fpath: str):
         record = wfdb.rdrecord(fpath)
@@ -91,7 +91,9 @@ class PTBDataset(Dataset):
         return item[:self.context_len], item[self.context_len:]
     
     def getitem_test(self, index):
-        record_index = index // (5000 - self.context_len - self.pred_len + 1)
+        parition_record_index = index // (5000 - self.context_len - self.pred_len + 1)
+        record_index = self.partition_info["test_partition"][self.partition_id]["partition_idx"][parition_record_index]
+
         signal_start_index = index % (5000 - self.context_len - self.pred_len + 1)
 
         record_fpath = os.path.join(self.ds_path, self.ptb_df["filename_hr"][record_index])

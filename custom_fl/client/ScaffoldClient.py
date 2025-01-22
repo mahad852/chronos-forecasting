@@ -161,7 +161,7 @@ class FlowerClient(NumPyClient):
         log_event(self.events_path, f"COMPLETED eval for client: {self.client_id}")
 
         # send statistics back to the server
-        return float(rmse), len(self.val_indices), {"mae": mae, "mse": mse, "rmse": rmse, "smape": smape}
+        return float(rmse), len(self.valdataset), {"mae": mae, "mse": mse, "rmse": rmse, "smape": smape}
 
 
 def get_scaffold_client_fn(
