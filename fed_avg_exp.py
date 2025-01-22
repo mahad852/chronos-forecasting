@@ -18,6 +18,7 @@ from custom_fl.strategy.ScaffoldStrategy import ScaffoldStrategy
 from custom_fl.client.FedAvgClient import get_fedavg_client_fn
 from custom_fl.client.ScaffoldClient import get_scaffold_client_fn
 from custom_fl.client.LocalClient import get_local_client_fn
+from custom_fl.client.ExpPersonalizedClient import get_expp_client_fn
 
 from custom_fl.server.ScaffoldServer import ScaffoldServer
 from flwr.server import Server
@@ -137,6 +138,9 @@ elif args.strategy == "scaffold":
     strategy_class = ScaffoldStrategy
 elif args.strategy == "local":
     client_fn_getter = get_local_client_fn
+    strategy_class = FedAvgStrategy
+elif args.strategy == "expp":
+    client_fn_getter = get_expp_client_fn
     strategy_class = FedAvgStrategy
 
 client_fn = client_fn_getter(client_ds=client_ds,
