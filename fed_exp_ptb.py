@@ -15,6 +15,7 @@ from custom_fl.strategy.ScaffoldStrategy import ScaffoldStrategy
 
 from custom_fl.client.FedAvgClient import get_fedavg_client_fn
 from custom_fl.client.ScaffoldClient import get_scaffold_client_fn
+from custom_fl.client.LocalClient import get_local_client_fn
 
 from custom_fl.server.ScaffoldServer import ScaffoldServer
 from flwr.server import Server
@@ -34,7 +35,7 @@ parser.add_argument("--cv_dir", help="directory to save client cvs for scaffold"
 
 args = parser.parse_args()
 
-if args.strategy not in ["fedavg", "scaffold"]:
+if args.strategy not in ["fedavg", "scaffold", "local"]:
     raise NotImplementedError(f"{args.strategy} is not support. Please use the --help flag to see valid strategy options.")
 
 context_len = 512
@@ -45,7 +46,7 @@ data_path = args.data_path #"/home/mali2/datasets/vital_signs" # "/Users/ma64959
 partition_path = args.partition_path
 
 val_batch_size = 64
-val_batches = 2
+val_batches = 50
 
 num_rounds = 10
 
@@ -105,6 +106,9 @@ if args.strategy == "fedavg":
 elif args.strategy == "scaffold":
     client_fn_getter = get_scaffold_client_fn
     strategy_class = ScaffoldStrategy
+elif args.strategy == "local":
+    client_fn_getter = get_local_client_fn
+    strategy_class = FedAvgStrategy
 
 client_fn = client_fn_getter(client_ds=client_ds,
                              train_root="ptb_arrow",

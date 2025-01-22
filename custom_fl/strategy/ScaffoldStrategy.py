@@ -60,9 +60,6 @@ class ScaffoldStrategy(FedAvg):
         # Aggregate parameters
         parameters_aggregated = aggregate(weights_results)
 
-        print(f"Saving round {server_round} aggregated_ndarrays...")
-        np.savez(os.path.join(self.log_path, f"round-{server_round}-weights.npz"), *parameters_aggregated)
-
         # Zip client_cv_updates and num_examples
         client_cv_updates_and_num_examples = [
             (update[len_combined_parameter // 2 :], num_examples)

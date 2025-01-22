@@ -53,7 +53,7 @@ model_path = "amazon/chronos-t5-tiny"
 data_path = args.data_path #"/home/mali2/datasets/vital_signs" # "/Users/ma649596/Downloads/vital_signs_data/data"
 
 val_batch_size = 64
-val_batches = 2
+val_batches = 50
 
 max_steps_for_clients = [
     400, 400, 400, 400, 400,

@@ -33,6 +33,8 @@ FitResultsAndFailures = Tuple[
 ]
 
 from utils.model import omit_non_weights_from_state_dict, restore_state_dict
+import os
+import numpy as np
 
 class ScaffoldServer(Server):
     """Implement server for SCAFFOLD."""
@@ -40,9 +42,10 @@ class ScaffoldServer(Server):
     def __init__(
         self,
         strategy: Strategy,
+        log_path: str,
         client_manager: Optional[ClientManager] = None,
         model: Optional[torch.nn.Module] = None,
-        model_name: Optional[str] = None
+        model_name: Optional[str] = None,
     ):
         if client_manager is None:
             client_manager = SimpleClientManager()
@@ -51,6 +54,7 @@ class ScaffoldServer(Server):
 
         self.sample_model = model
         self.model_name = model_name
+        self.log_path = log_path
 
     def is_chronos_model(self):
         return self.model_name and "chronos" in self.model_name.lower()
@@ -168,6 +172,9 @@ class ScaffoldServer(Server):
             updated_params = restore_state_dict(self.sample_model, updated_params)
 
         parameters_updated = ndarrays_to_parameters(updated_params)
+
+        print(f"Saving round {server_round} aggregated_ndarrays...")
+        np.savez(os.path.join(self.log_path, f"round-{server_round}-weights.npz"), *updated_params)
         
         # metrics
         metrics_aggregated = aggregated_result[1]
