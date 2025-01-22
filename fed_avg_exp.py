@@ -36,7 +36,7 @@ parser.add_argument("--cv_dir", help="directory to save client cvs for scaffold"
 
 args = parser.parse_args()
 
-if args.strategy not in ["fedavg", "scaffold", "local"]:
+if args.strategy not in ["fedavg", "scaffold", "local", "expp"]:
     raise NotImplementedError(f"{args.strategy} is not support. Please use the --help flag to see valid strategy options.")
 
 if args.strategy == "scaffold" and args.cv_dir != "":
