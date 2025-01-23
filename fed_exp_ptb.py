@@ -91,7 +91,7 @@ for i, pid in enumerate(partition_ids):
         partition_id=pid
     )
 
-    create_ptb_dataset(train_ds, os.path.join("ptb_arrow", f"client0{i + 1}.arrow"))
+    # create_ptb_dataset(train_ds, os.path.join("ptb_arrow", f"client0{i + 1}.arrow"))
     client_ds.append(test_ds)
 
     max_steps_for_clients.append(len(train_ds))
