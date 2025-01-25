@@ -25,6 +25,7 @@ from flwr.server import Server
 from flwr.server.client_manager import SimpleClientManager
 
 from utils.model import gen_weighted_avergage_fn, get_params
+from utils.general import find_round_offset
 
 from convert_vital_signs_to_arrow import create_vital_signs_dataset
 
@@ -66,6 +67,8 @@ num_rounds = 10
 
 log_path = args.log_path #"logs/fed_avg_hetro2"
 
+round_offset = find_round_offset(log_path)
+
 if not os.path.exists("logs"):
     os.mkdir("logs")
 
@@ -73,7 +76,9 @@ if not os.path.exists(log_path):
     os.mkdir(log_path)
 
 event_file = os.path.join(log_path, "events.txt")
-open(event_file, "w").close()
+
+if round_offset == 0:
+    open(event_file, "w").close()
 
 
 all_user_ids = [
@@ -161,7 +166,8 @@ strategy = strategy_class(
     min_evaluate_clients=len(client_ds),
     min_available_clients=len(client_ds),
     log_path=log_path,
-    event_file=event_file
+    event_file=event_file,
+    round_offset=round_offset
 )
 
 if args.strategy == "scaffold":
