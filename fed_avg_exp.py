@@ -34,6 +34,7 @@ parser.add_argument("--strategy", help="The strategy to use. pass one of 'scaffo
 parser.add_argument("--log_path", help="The path where weights and event logs would be stored.")
 parser.add_argument("--data_path", help="The path where the dataset is stored.")
 parser.add_argument("--cv_dir", help="directory to save client cvs for scaffold", default="")
+parser.add_argument("--num_rounds", help="number of communication rounds", type=int, default=10)
 
 args = parser.parse_args()
 
@@ -63,7 +64,7 @@ max_steps_for_clients = [
     400, 400, 400, 400, 400
 ]
 
-num_rounds = 10
+num_rounds = args.num_rounds
 
 log_path = args.log_path #"logs/fed_avg_hetro2"
 

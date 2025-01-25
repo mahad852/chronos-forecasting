@@ -34,6 +34,7 @@ parser.add_argument("--log_path", help="The path where weights and event logs wo
 parser.add_argument("--data_path", help="The path where the dataset is stored.")
 parser.add_argument("--partition_path", help="The path where the partition json is stored.")
 parser.add_argument("--cv_dir", help="directory to save client cvs for scaffold", default="")
+parser.add_argument("--num_rounds", help="number of communication rounds", type=int, default=10)
 
 args = parser.parse_args()
 
@@ -50,7 +51,7 @@ partition_path = args.partition_path
 val_batch_size = 64
 val_batches = 50
 
-num_rounds = 10
+num_rounds = args.num_rounds
 
 log_path = args.log_path #"logs/fed_avg_hetro2"
 
