@@ -127,7 +127,7 @@ client_fn = client_fn_getter(client_ds=client_ds,
 model = load_model(model_id=model_path)
 
 if round_offset > 0:
-    npy_model = np.load(os.path.join(f"round-{round_offset}-weights.npz"))
+    npy_model = np.load(os.path.join(log_path, f"round-{round_offset}-weights.npz"))
     npy_params = [npy_model[file] for file in npy_model.files]
     npy_params = restore_state_dict(model, npy_params)
     set_params(model, npy_params)
