@@ -21,11 +21,12 @@ from custom_fl.server.ScaffoldServer import ScaffoldServer
 from flwr.server import Server
 from flwr.server.client_manager import SimpleClientManager
 
-from utils.model import gen_weighted_avergage_fn, get_params
+from utils.model import gen_weighted_avergage_fn, get_params, restore_state_dict, set_params
 from utils.general import find_round_offset
 
 from convert_vital_signs_to_arrow import create_ptb_dataset
 import json
+import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--strategy", help="The strategy to use. pass one of 'scaffold' or 'fedavg'")
@@ -123,6 +124,13 @@ client_fn = client_fn_getter(client_ds=client_ds,
                              log_path=log_path, save_dir=args.cv_dir)
 
 model = load_model(model_id=model_path)
+
+if round_offset == 0:
+    npy_model = np.load(args.model_path)
+    npy_params = [npy_model[file] for file in npy_model.files]
+    npy_params = restore_state_dict(model, npy_params)
+    set_params(model, npy_params)
+    
 ndarrays = get_params(model)
 global_model_init = ndarrays_to_parameters(ndarrays)
 
