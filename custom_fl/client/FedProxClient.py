@@ -67,7 +67,7 @@ class FlowerClient(NumPyClient):
         # copy parameters sent by the server into client's local model
         set_params(self.model, parameters)
 
-        compute_loss_func = get_fedprox_loss_function(model=self.model, proximal_mu=1.0, global_weigths=[param for param in self.model.parameters()])
+        compute_loss_func = get_fedprox_loss_function(proximal_mu=1.0, global_weigths=[param for param in self.model.parameters()])
 
         # do local training (call same function as centralised setting)
         self.model = train_vital_signs(training_data_paths=[self.train_data_path], model=self.model, context_length=self.context_len, prediction_length=self.pred_len, max_steps=self.max_steps, compute_loss_func=compute_loss_func)

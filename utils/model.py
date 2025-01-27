@@ -11,7 +11,7 @@ from torch.optim import SGD, Optimizer
 from flwr.common import Metrics
 
 from utils.general import log_event
-from transformers import Trainer
+from transformers import Trainer, TrainingArguments
 
 import os
 
@@ -116,13 +116,10 @@ def restore_state_dict(model: torch.nn.Module, params) -> List:
     
     return restored
 
-def get_fedprox_loss_function(model: torch.nn.Module, proximal_mu: float, global_weigths: List[torch.Tensor]):
-    def compute_loss(outputs, labels, num_items_in_batch):
-        loss = outputs.loss
-        
+def get_fedprox_loss_function(proximal_mu: float, global_weigths: List[torch.Tensor]):
+    def compute_loss(model, loss):
         proximal_term = 0.0
         for param, global_param in zip(model.parameters(), global_weigths):
-            print(param.sum())
             proximal_term += torch.norm(param - global_param) ** 2
         
         loss += (proximal_mu / 2) * proximal_term
@@ -151,3 +148,18 @@ class ScaffoldOptimizer(SGD):
         for group in self.param_groups:
             for par, s_cv, c_cv in zip(group["params"], self.server_cv, self.client_cv):
                 par.data.add_(s_cv - c_cv, alpha=-group["lr"])
+
+class CustomTrainer(Trainer):
+    def __init__(self, *args, compute_loss_func=None, **kwargs):
+        # Pass all arguments to the base class constructor
+        super().__init__(*args, **kwargs)
+        # Handle the additional keyword argument
+        self.compute_loss_func = compute_loss_func
+
+    def compute_loss(self, model, inputs, return_outputs=False):
+        loss = super().compute_loss(model, inputs, return_outputs)
+        
+        if self.compute_loss_func:
+            loss += self.compute_loss_func(model, loss)
+
+        return loss

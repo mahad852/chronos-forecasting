@@ -46,6 +46,8 @@ from chronos import ChronosConfig, ChronosTokenizer
 
 app = typer.Typer(pretty_exceptions_enable=False)
 
+from utils.model import CustomTrainer
+
 
 def is_main_process() -> bool:
     """
@@ -797,7 +799,7 @@ def train_vital_signs(
     )
 
     # Create Trainer instance
-    trainer = Trainer(
+    trainer = CustomTrainer(
         model=model,
         args=training_args,
         train_dataset=shuffled_train_dataset,
