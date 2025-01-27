@@ -11,6 +11,7 @@ from torch.optim import SGD, Optimizer
 from flwr.common import Metrics
 
 from utils.general import log_event
+from transformers import Trainer
 
 import os
 
@@ -114,6 +115,21 @@ def restore_state_dict(model: torch.nn.Module, params) -> List:
             restored.append(v)
     
     return restored
+
+def get_fedprox_loss_function(model: torch.nn.Module, proximal_mu: float, global_weigths: List[torch.Tensor]):
+    def compute_loss(outputs, labels, num_items_in_batch):
+        loss = outputs.loss
+        
+        proximal_term = 0.0
+        for param, global_param in zip(model.parameters(), global_weigths):
+            print(param.sum())
+            proximal_term += torch.norm(param - global_param) ** 2
+        
+        loss += (proximal_mu / 2) * proximal_term
+
+        return loss
+    
+    return compute_loss
 
 class ScaffoldOptimizer(SGD):
     """Implements SGD optimizer step function as defined in the SCAFFOLD paper."""
