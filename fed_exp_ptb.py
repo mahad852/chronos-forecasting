@@ -16,6 +16,7 @@ from custom_fl.strategy.ScaffoldStrategy import ScaffoldStrategy
 from custom_fl.client.FedAvgClient import get_fedavg_client_fn
 from custom_fl.client.ScaffoldClient import get_scaffold_client_fn
 from custom_fl.client.LocalClient import get_local_client_fn
+from custom_fl.client.FedProxClient import get_fedprox_client_fn
 
 from custom_fl.server.ScaffoldServer import ScaffoldServer
 from flwr.server import Server
@@ -38,7 +39,7 @@ parser.add_argument("--num_rounds", help="number of communication rounds", type=
 
 args = parser.parse_args()
 
-if args.strategy not in ["fedavg", "scaffold", "local"]:
+if args.strategy not in ["fedavg", "scaffold", "local", "fedprox"]:
     raise NotImplementedError(f"{args.strategy} is not support. Please use the --help flag to see valid strategy options.")
 
 context_len = 512
@@ -115,6 +116,9 @@ elif args.strategy == "scaffold":
     strategy_class = ScaffoldStrategy
 elif args.strategy == "local":
     client_fn_getter = get_local_client_fn
+    strategy_class = FedAvgStrategy
+elif args.strategy == "fedprox":
+    client_fn_getter = get_fedprox_client_fn
     strategy_class = FedAvgStrategy
 
 client_fn = client_fn_getter(client_ds=client_ds,
