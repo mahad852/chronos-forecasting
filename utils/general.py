@@ -11,7 +11,7 @@ def find_round_offset(log_path: str) -> int:
         return max_offset
     
     for file in os.listdir(log_path):
-        if ".npz" not in file or not "round" in file:
+        if ".npz" not in file or not "round" in file or not "weights" in file:
             continue
 
         offset = int(file.split(".")[0].split("-")[1].strip())
