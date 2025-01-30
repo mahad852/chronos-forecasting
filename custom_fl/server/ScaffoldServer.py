@@ -72,7 +72,7 @@ class ScaffoldServer(Server):
 
             if self.round_offset > 0:
                 npy_cv = np.load(os.path.join(self.log_path, f"server_cv_round_{self.round_offset + server_round}.npz"))
-                self.server_cv = [npy_cv[file] for file in npy_cv.files]
+                self.server_cv = [torch.from_numpy(npy_cv[file]) for file in npy_cv.files]
             else:
                 self.server_cv = [
                     torch.from_numpy(t)
