@@ -151,7 +151,7 @@ strategy = strategy_class(
 )
 
 if args.strategy == "scaffold":
-    server = ScaffoldServer(client_manager=SimpleClientManager(), strategy=strategy, model=model, model_name=model_path, log_path=log_path)
+    server = ScaffoldServer(client_manager=SimpleClientManager(), strategy=strategy, model=model, model_name=model_path, log_path=log_path, round_offset=round_offset)
     # server = Server(client_manager=SimpleClientManager(), strategy=strategy)
 
 # each client gets 1xCPU (this is the default if no resources are specified)

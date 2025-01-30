@@ -46,6 +46,7 @@ class ScaffoldServer(Server):
         client_manager: Optional[ClientManager] = None,
         model: Optional[torch.nn.Module] = None,
         model_name: Optional[str] = None,
+        round_offset:int = 0
     ):
         if client_manager is None:
             client_manager = SimpleClientManager()
@@ -55,6 +56,7 @@ class ScaffoldServer(Server):
         self.sample_model = model
         self.model_name = model_name
         self.log_path = log_path
+        self.round_offset = round_offset
 
     def is_chronos_model(self):
         return self.model_name and "chronos" in self.model_name.lower()
@@ -68,10 +70,15 @@ class ScaffoldServer(Server):
         if parameters is not None:
             log(INFO, "Using initial parameters provided by strategy")
 
-            self.server_cv = [
-                torch.from_numpy(t)
-                for t in parameters_to_ndarrays(parameters)
-            ]
+            if self.round_offset > 0:
+                npy_cv = np.load(os.path.join(self.log_path, f"server_cv_round_{self.round_offset + server_round}.npz"))
+                self.server_cv = [npy_cv[file] for file in npy_cv.files]
+            else:
+                self.server_cv = [
+                    torch.from_numpy(t)
+                    for t in parameters_to_ndarrays(parameters)
+                ]
+                np.savez(os.path.join(self.log_path, f"server_cv_round_{server_round}.npz"), *self.server_cv)
             
             if self.is_chronos_model():
                 self.server_cv = omit_non_weights_from_state_dict(self.sample_model, self.server_cv)
@@ -175,6 +182,8 @@ class ScaffoldServer(Server):
 
         print(f"Saving round {server_round} aggregated_ndarrays...")
         np.savez(os.path.join(self.log_path, f"round-{server_round}-weights.npz"), *updated_params)
+
+        np.savez(os.path.join(self.log_path, f"server_cv_round_{server_round}.npz"), *self.server_cv)
         
         # metrics
         metrics_aggregated = aggregated_result[1]
