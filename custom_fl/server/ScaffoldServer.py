@@ -80,7 +80,7 @@ class ScaffoldServer(Server):
                 ]
                 np.savez(os.path.join(self.log_path, f"server_cv_round_{server_round}.npz"), *self.server_cv)
             
-            if self.is_chronos_model():
+            if self.is_chronos_model() and self.round_offset == 0:
                 self.server_cv = omit_non_weights_from_state_dict(self.sample_model, self.server_cv)
 
             return parameters
