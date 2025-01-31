@@ -17,6 +17,7 @@ from custom_fl.client.FedAvgClient import get_fedavg_client_fn
 from custom_fl.client.ScaffoldClient import get_scaffold_client_fn
 from custom_fl.client.LocalClient import get_local_client_fn
 from custom_fl.client.FedProxClient import get_fedprox_client_fn
+from custom_fl.client.HybridClient import get_hybrid_client_fn
 
 from custom_fl.server.ScaffoldServer import ScaffoldServer
 from flwr.server import Server
@@ -36,6 +37,7 @@ parser.add_argument("--data_path", help="The path where the dataset is stored.")
 parser.add_argument("--partition_path", help="The path where the partition json is stored.")
 parser.add_argument("--cv_dir", help="directory to save client cvs for scaffold", default="")
 parser.add_argument("--num_rounds", help="number of communication rounds", type=int, default=10)
+parser.add_argument("--init_params_path", help="path global initial params", type=str, default=None)
 
 args = parser.parse_args()
 
@@ -120,6 +122,9 @@ elif args.strategy == "local":
 elif args.strategy == "fedprox":
     client_fn_getter = get_fedprox_client_fn
     strategy_class = FedAvgStrategy
+elif args.strategy == "hybrid":
+    client_fn_getter = get_hybrid_client_fn
+    strategy_class = FedAvgStrategy
 
 client_fn = client_fn_getter(client_ds=client_ds,
                              train_root="ptb_arrow",
@@ -130,11 +135,17 @@ client_fn = client_fn_getter(client_ds=client_ds,
 
 model = load_model(model_id=model_path)
 
-if round_offset > 0:
+if round_offset > 0 and (args.init_params_path is None or args.init_params_path == ""):
     npy_model = np.load(os.path.join(log_path, f"round-{round_offset}-weights.npz"))
     npy_params = [npy_model[file] for file in npy_model.files]
     npy_params = restore_state_dict(model, npy_params)
     set_params(model, npy_params)
+elif args.init_params_path is not None and args.init_params_path != "":
+    npy_model = np.load(os.path.join(log_path, args.init_params_path))
+    npy_params = [npy_model[file] for file in npy_model.files]
+    npy_params = restore_state_dict(model, npy_params)
+    set_params(model, npy_params)
+
 
 ndarrays = get_params(model)
 global_model_init = ndarrays_to_parameters(ndarrays)
