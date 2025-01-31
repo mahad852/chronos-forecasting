@@ -41,7 +41,7 @@ parser.add_argument("--init_params_path", help="path global initial params", typ
 
 args = parser.parse_args()
 
-if args.strategy not in ["fedavg", "scaffold", "local", "expp", "fedprox"]:
+if args.strategy not in ["fedavg", "scaffold", "local", "expp", "fedprox", "hybrid"]:
     raise NotImplementedError(f"{args.strategy} is not support. Please use the --help flag to see valid strategy options.")
 
 if args.strategy == "scaffold" and args.cv_dir != "":
