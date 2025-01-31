@@ -141,7 +141,7 @@ if round_offset > 0 and (args.init_params_path is None or args.init_params_path 
     npy_params = restore_state_dict(model, npy_params)
     set_params(model, npy_params)
 elif args.init_params_path is not None and args.init_params_path != "":
-    npy_model = np.load(os.path.join(log_path, args.init_params_path))
+    npy_model = np.load(args.init_params_path)
     npy_params = [npy_model[file] for file in npy_model.files]
     npy_params = restore_state_dict(model, npy_params)
     set_params(model, npy_params)
