@@ -23,8 +23,7 @@ CHRONOS_OUTPUT_DIR="/anvil/projects/x-bio240254/FL/chronos_outputs"
 export CHRONOS_OUTPUT_DIR
 
 # Launch GPU code
-python fed_avg_exp.py \ 
-    --strategy fedavg \
+python fed_avg_exp.py --strategy fedavg \
     --log_path /anvil/projects/x-bio240254/FL/logs/fedavg_niid \
     --data_path /anvil/projects/x-bio240254/FL/vital_signs \
     --num_rounds 30 \
