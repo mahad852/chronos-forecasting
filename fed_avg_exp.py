@@ -38,6 +38,7 @@ parser.add_argument("--data_path", help="The path where the dataset is stored.")
 parser.add_argument("--cv_dir", help="directory to save client cvs for scaffold", default="")
 parser.add_argument("--num_rounds", help="number of communication rounds", type=int, default=10)
 parser.add_argument("--init_params_path", help="path global initial params", type=str, default=None)
+parser.add_argument("--create_client_dirs", action="store_true", default=False, help="whether to create client data files")
 
 args = parser.parse_args()
 
@@ -104,7 +105,7 @@ all_data_attributes = [
     "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2",
     "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2",
     "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2",
-    "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2"
+    "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_ecg2", "tfm_icg"
 ]
 
 client_ds = []
@@ -131,7 +132,9 @@ for pid in range(len(all_user_ids)):
 
     indices = sorted(np.random.permutation(len(train_ds))[:max_steps_for_clients[pid]])
 
-    # create_vital_signs_dataset(train_ds, os.path.join("vital_signs_arrow", f"client0{pid + 1}.arrow"), indices)
+    if args.create_client_dirs:
+        create_vital_signs_dataset(train_ds, os.path.join("vital_signs_arrow", f"client0{pid + 1}.arrow"), indices)
+
     print("Created client:", pid + 1)
     client_ds.append(test_ds)
 

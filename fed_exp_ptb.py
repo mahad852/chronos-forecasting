@@ -38,6 +38,7 @@ parser.add_argument("--partition_path", help="The path where the partition json 
 parser.add_argument("--cv_dir", help="directory to save client cvs for scaffold", default="")
 parser.add_argument("--num_rounds", help="number of communication rounds", type=int, default=10)
 parser.add_argument("--init_params_path", help="path global initial params", type=str, default=None)
+parser.add_argument("--create_client_dirs", action="store_true", default=False, help="whether to create client data files")
 
 args = parser.parse_args()
 
@@ -100,8 +101,10 @@ for i, pid in enumerate(partition_ids):
         context_len=context_len, 
         partition_id=pid
     )
-
-    # create_ptb_dataset(train_ds, os.path.join("ptb_arrow", f"client0{i + 1}.arrow"))
+    
+    if args.create_client_dirs:
+        create_ptb_dataset(train_ds, os.path.join("ptb_arrow", f"client0{i + 1}.arrow"))
+        
     client_ds.append(test_ds)
 
     max_steps_for_clients.append(len(train_ds))

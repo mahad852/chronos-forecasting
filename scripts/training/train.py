@@ -701,7 +701,11 @@ def train_vital_signs(
     transformers.set_seed(seed=seed)
 
     raw_training_config = deepcopy(locals())
-    output_dir = Path(output_dir)
+
+    if "CHRONOS_OUTPUT_DIR" not in os.environ:
+        output_dir = Path(output_dir)
+    else:
+        output_dir = Path(os.environ["CHRONOS_OUTPUT_DIR"])
 
     assert isinstance(training_data_paths, list)
 

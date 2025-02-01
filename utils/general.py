@@ -19,3 +19,25 @@ def find_round_offset(log_path: str) -> int:
             max_offset = offset
     
     return max_offset
+
+def remove_dir(dir):
+    if not os.path.isdir(dir):
+        os.remove(dir)
+        return
+    
+    for f in os.listdir(dir):
+        remove_dir(os.path.join(dir, f))
+    os.rmdir(dir)
+
+def remove_old_dirs(path: str, num: int = 20):
+    dirs = []
+    
+    for dir in os.listdir(path):
+        if "run-" in dir:
+            dirs.append((os.path.join(path, dir), int(dir.split("-")[1])))
+    
+    dirs = sorted(dirs, key=lambda x: x[1])
+
+    num = min(len(dirs), num)
+
+    dirs = [remove_dir(d) for d, _ in dirs[:num]]
