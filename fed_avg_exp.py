@@ -31,6 +31,8 @@ from utils.general import find_round_offset
 
 from convert_vital_signs_to_arrow import create_vital_signs_dataset
 
+import torch
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--strategy", help="The strategy to use. pass one of 'scaffold' or 'fedavg'")
 parser.add_argument("--log_path", help="The path where weights and event logs would be stored.")
@@ -200,7 +202,7 @@ if args.strategy == "scaffold":
     # server = Server(client_manager=SimpleClientManager(), strategy=strategy)
 
 # each client gets 1xCPU (this is the default if no resources are specified)
-my_client_resources = {'num_cpus': 1, 'num_gpus': 2/len(client_ds)}
+my_client_resources = {'num_cpus': 1, 'num_gpus': torch.cuda.device_count()/len(client_ds)}
 
 
 start_simulation(
@@ -209,6 +211,6 @@ start_simulation(
     num_clients=len(client_ds), # Total number of clients available
     config=ServerConfig(num_rounds=num_rounds), # Specify number of FL rounds
     strategy=strategy, # A Flower strategy
-    ray_init_args = {'num_cpus': 1, 'num_gpus': 2},
+    ray_init_args = {'num_cpus': 1, 'num_gpus': torch.cuda.device_count()},
     client_resources=my_client_resources
 )
