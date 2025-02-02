@@ -4,7 +4,7 @@
 #SBATCH -A bio240254-gpu                # allocation name
 #SBATCH --nodes=1                       # Total # of nodes 
 #SBATCH --ntasks-per-node=1             # Number of MPI ranks per node (one rank per GPU)
-#SBATCH --gpus-per-node=4               # Number of GPUs per node
+#SBATCH --gpus-per-node=2               # Number of GPUs per node
 #SBATCH --time=24:00:00                 # Total run time limit (hh:mm:ss)
 #SBATCH -J fed_avg_exp                  # Job name
 #SBATCH -o slurm_outputs/fed_avg.out    # Name of stdout output file
