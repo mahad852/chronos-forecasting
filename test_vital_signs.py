@@ -12,7 +12,7 @@ context_len = 512
 pred_len = 64
 
 batch_size = 64
-batches = 10000
+batches = 50
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--log_path", help="The path where weights and event logs would be stored.")
