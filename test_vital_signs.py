@@ -12,7 +12,7 @@ context_len = 512
 pred_len = 64
 
 batch_size = 64
-batches = 50
+batches = 950
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--log_path", help="The path where weights and event logs would be stored.")
@@ -39,7 +39,7 @@ def set_params(model, parameters):
 print(f"Data path: {data_path}. Loading vital signs data...")
 
 user_ids = []
-for num in range(30, 31):
+for num in range(1, 30):
     # if num in [15, 18, 24]:
     #     continue
     if num < 10:
@@ -50,7 +50,7 @@ for num in range(30, 31):
 
 test_dataset = VitalSignsDataset(
     user_ids=user_ids,
-    data_attribute="tfm_icg",
+    data_attribute="tfm_ecg2",
     scenarios=["resting"],
     data_path=data_path,
     is_train=False,
@@ -174,7 +174,7 @@ if not os.path.exists("logs"):
 # with open(os.path.join("logs", f"Chronos_Tiny_CenBothUnbalanced_ICG_{context_len}_{pred_len}.csv"), "w") as f:
 # with open(os.path.join("logs", f"Chronos_Tiny_FA_IID_9_{context_len}_{pred_len}.csv"), "w") as f:
 
-with open(os.path.join("logs", log_path), "w") as f:
+with open(os.path.join(log_path), "w") as f:
     f.write("context_len,horizon_len,MSE,RMSE,MAE,SMAPE\n")
     for p_len in range(1, pred_len + 1):
         f.write(f"{context_len},{p_len},{mse_by_pred_len[p_len]},{rmse_by_pred_len[p_len]},{mae_by_pred_len[p_len]},{smapes_by_pred_len[p_len]}")

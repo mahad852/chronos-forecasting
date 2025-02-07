@@ -5,12 +5,13 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 from custom_datasets.PTBDataset import PTBDataset
 from utils.model import restore_state_dict, calculate_smape, set_params, batch_loader
 import argparse
+import json
 
 context_len = 512
 pred_len = 64
 
 batch_size = 64
-batches = 2
+batches = 50
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--log_path", help="The path where weights and event logs would be stored.")
@@ -26,16 +27,32 @@ partition_path = args.partition_path
 
 print(f"Data path: {data_path}. Loading PTB-XL data...")
 
-test_dataset = PTBDataset(
-    partition_path=partition_path, 
-    ds_path=data_path, 
-    is_train=False, 
-    pred_len=pred_len, 
-    context_len=context_len, 
-    partition_id=None
-)
+clients = []
 
-indices = sorted(np.random.permutation(len(test_dataset))[: (batches * batch_size)])
+with open(partition_path, "r") as f:
+    json_obj = json.load(partition_path)
+
+pids = [k for k in json_obj["test_partition"].keys()]
+
+for pid in pids:
+    test_dataset = PTBDataset(
+        partition_path=partition_path, 
+        ds_path=data_path, 
+        is_train=False, 
+        pred_len=pred_len, 
+        context_len=context_len, 
+        partition_id=pid
+    )
+    clients.append(test_dataset)
+
+
+
+indices_per_client = []
+
+for client in clients:
+    indices = sorted(np.random.permutation(len(client))[: (batches * batch_size)])
+    indices_per_client.append(indices)
+
 
 print("PTB-XL data loaded.")
 
@@ -73,36 +90,37 @@ for p_len in range(1, pred_len + 1):
     mae_by_pred_len[p_len] = 0.0
     smapes_by_pred_len[p_len] = 0.0
 
-for i, (x, y) in enumerate(batch_loader(indices, test_dataset, batch_size)):
-    forecast = pipeline.predict(
-        context=x,
-        prediction_length=pred_len,
-        num_samples=20,
-    )
+for client in clients:
+    for i, (x, y) in enumerate(batch_loader(indices, client, batch_size)):
+        forecast = pipeline.predict(
+            context=x,
+            prediction_length=pred_len,
+            num_samples=20,
+        )
 
-    forecast = np.quantile(forecast.numpy(), 0.5, axis=1)
+        forecast = np.quantile(forecast.numpy(), 0.5, axis=1)
 
-    mse = mean_squared_error(y, forecast)
-    rmse = np.sqrt(mse)
-    mae = mean_absolute_error(y, forecast)
-    smape = calculate_smape(y.numpy(), forecast)
+        mse = mean_squared_error(y, forecast)
+        rmse = np.sqrt(mse)
+        mae = mean_absolute_error(y, forecast)
+        smape = calculate_smape(y.numpy(), forecast)
 
-    mses.append(mse)
-    maes.append(mae)
-    smapes.append(smape)
+        mses.append(mse)
+        maes.append(mae)
+        smapes.append(smape)
 
-    total += 1
+        total += 1
 
-    for p_len in range(1, pred_len + 1):
-        mse_by_pred_len[p_len] += mean_squared_error(y[:, :p_len], forecast[:, :p_len])
-        mae_by_pred_len[p_len] += mean_absolute_error(y[:, :p_len], forecast[:, :p_len])
-        smapes_by_pred_len[p_len] += calculate_smape(y[:, :p_len].numpy(), forecast[:, :p_len])
+        for p_len in range(1, pred_len + 1):
+            mse_by_pred_len[p_len] += mean_squared_error(y[:, :p_len], forecast[:, :p_len])
+            mae_by_pred_len[p_len] += mean_absolute_error(y[:, :p_len], forecast[:, :p_len])
+            smapes_by_pred_len[p_len] += calculate_smape(y[:, :p_len].numpy(), forecast[:, :p_len])
 
-    if i % 20 == 0:
-        print(f"iteraition: {i} | MSE: {mse} RMSE: {rmse} MAE: {mae} SMAPE: {smape}")
+        if i % 20 == 0:
+            print(f"iteraition: {i} | MSE: {mse} RMSE: {rmse} MAE: {mae} SMAPE: {smape}")
 
-    if i % 200 == 0:
-        print(f"AGG STATS | Iteration: {i} | MSE: {np.average(mses)} RMSE: {np.sqrt(np.average(mses))} MAE: {np.average(maes)} SMAPE: {np.average(smapes)}")
+        if i % 200 == 0:
+            print(f"AGG STATS | Iteration: {i} | MSE: {np.average(mses)} RMSE: {np.sqrt(np.average(mses))} MAE: {np.average(maes)} SMAPE: {np.average(smapes)}")
 
 print(f"MSE: {np.average(mses)} RMSE: {np.sqrt(np.average(mses))} MAE: {np.average(maes)} SMAPE: {np.average(smapes)}")
 
