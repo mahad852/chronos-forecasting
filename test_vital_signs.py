@@ -39,7 +39,7 @@ def set_params(model, parameters):
 print(f"Data path: {data_path}. Loading vital signs data...")
 
 user_ids = []
-for num in range(1, 31):
+for num in range(30, 31):
     # if num in [15, 18, 24]:
     #     continue
     if num < 10:
@@ -50,7 +50,7 @@ for num in range(1, 31):
 
 test_dataset = VitalSignsDataset(
     user_ids=user_ids,
-    data_attribute="tfm_ecg2",
+    data_attribute="tfm_icg",
     scenarios=["resting"],
     data_path=data_path,
     is_train=False,
