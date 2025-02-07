@@ -90,7 +90,7 @@ for p_len in range(1, pred_len + 1):
     mae_by_pred_len[p_len] = 0.0
     smapes_by_pred_len[p_len] = 0.0
 
-for client in clients:
+for indices, client in zip(indices_per_client, clients):
     for i, (x, y) in enumerate(batch_loader(indices, client, batch_size)):
         forecast = pipeline.predict(
             context=x,
