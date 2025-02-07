@@ -30,7 +30,7 @@ print(f"Data path: {data_path}. Loading PTB-XL data...")
 clients = []
 
 with open(partition_path, "r") as f:
-    json_obj = json.load(partition_path)
+    json_obj = json.load(f)
 
 pids = [k for k in json_obj["test_partition"].keys()]
 
